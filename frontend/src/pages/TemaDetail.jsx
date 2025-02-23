@@ -10,7 +10,7 @@ const TemaDetail = () => {
   useEffect(() => {
     const fetchTema = async () => {
       try {
-        const res = await axios.get(`https://curly-meme-x5pr4447w5x6cpv49-5173.app.github.dev/api/temas/${id}`);
+        const res = await axios.get(`https://ideal-potato-g4rjv7g56w4xhw7x9-5173.app.github.dev/api/temas/${id}`);
         setTema(res.data);
         setLoading(false);
       } catch (error) {

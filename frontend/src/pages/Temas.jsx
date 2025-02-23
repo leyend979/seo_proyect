@@ -9,7 +9,7 @@ const Temas = () => {
   // Función para obtener los temas del backend
   const fetchTemas = async () => {
     try {
-      const res = await axios.get('https://curly-meme-x5pr4447w5x6cpv49-5173.app.github.dev/api/temas');
+      const res = await axios.get('https://ideal-potato-g4rjv7g56w4xhw7x9-5173.app.github.dev/api/temas');
       setTemas(res.data);
     } catch (error) {
       console.error('Error al obtener temas:', error);
