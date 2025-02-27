@@ -8,6 +8,7 @@ const CollectionModal = ({ onSubmit, initialData = null, onClose }) => {
   const [nombre, setNombre] = useState('');
   const [imagenUrl, setImagenUrl] = useState('');
   const [secciones, setSecciones] = useState([{ tituloSecundario: '', contenido: '' }]);
+  const modalRef = useRef(null);
 
   useEffect(() => {
     if (initialData) {
@@ -27,6 +28,12 @@ const CollectionModal = ({ onSubmit, initialData = null, onClose }) => {
       }
     }
   }, [initialData]);
+
+  useEffect(() => {
+    if (modalRef.current) {
+      modalRef.current.scrollTop = modalRef.current.scrollHeight;
+    }
+  }, [secciones]);
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
@@ -56,74 +63,74 @@ const CollectionModal = ({ onSubmit, initialData = null, onClose }) => {
 
   return (
     <Modal isOpen={true} onClose={onClose}>
-      <h3>{initialData ? 'Editar Colección' : 'Agregar Nueva Colección'}</h3>
-      <form onSubmit={handleFormSubmit}>
-        <div style={{ marginBottom: '1rem' }}>
-          <label>Título Global:</label><br/>
-          <input
-            type="text"
-            value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
-            required
-            style={{ width: '100%', padding: '0.5rem' }}
-          />
-        </div>
-
-        {/* Secciones dinámicas */}
-        {secciones.map((seccion, index) => (
-          <div key={index} style={{ marginBottom: '1rem', border: '1px solid #ddd', padding: '1rem', borderRadius: '5px' }}>
-            <label>Título Secundario (opcional):</label><br/>
+      <div ref={modalRef} style={{ maxHeight: '80vh', overflowY: 'auto', padding: '1rem' }}>
+        <h3>{initialData ? 'Editar Colección' : 'Agregar Nueva Colección'}</h3>
+        <form onSubmit={handleFormSubmit}>
+          <div style={{ marginBottom: '1rem' }}>
+            <label>Título Global:</label><br/>
             <input
               type="text"
-              value={seccion.tituloSecundario}
-              onChange={(e) => handleChangeSeccion(index, 'tituloSecundario', e.target.value)}
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
+              required
               style={{ width: '100%', padding: '0.5rem' }}
             />
-
-            <label>Contenido:</label><br/>
-            <ReactQuill
-              value={seccion.contenido}
-              onChange={(value) => handleChangeSeccion(index, 'contenido', value)}
-            />
-
-            {secciones.length > 1 && (
-              <button
-                type="button"
-                onClick={() => handleRemoveSeccion(index)}
-                style={{ backgroundColor: 'red', color: 'white', padding: '0.5rem', marginTop: '0.5rem' }}
-              >
-                Eliminar sección
-              </button>
-            )}
           </div>
-        ))}
 
-        <button type="button" onClick={handleAddSeccion} style={{ marginTop: '1rem', backgroundColor: '#007bff', color: 'white', padding: '0.5rem 1rem' }}>
-          + Agregar Sección
-        </button>
+          {secciones.map((seccion, index) => (
+            <div key={index} style={{ marginBottom: '1rem', border: '1px solid #ddd', padding: '1rem', borderRadius: '5px' }}>
+              <label>Título Secundario (opcional):</label><br/>
+              <input
+                type="text"
+                value={seccion.tituloSecundario}
+                onChange={(e) => handleChangeSeccion(index, 'tituloSecundario', e.target.value)}
+                style={{ width: '100%', padding: '0.5rem' }}
+              />
+              <label>Contenido:</label><br/>
+              <ReactQuill
+                value={seccion.contenido}
+                onChange={(value) => handleChangeSeccion(index, 'contenido', value)}
+              />
+              {secciones.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => handleRemoveSeccion(index)}
+                  style={{ backgroundColor: 'red', color: 'white', padding: '0.5rem', marginTop: '0.5rem' }}
+                >
+                  Eliminar sección
+                </button>
+              )}
+            </div>
+          ))}
 
-        <ImageUpload onUpload={setImagenUrl} />
-        {imagenUrl && (
-          <div style={{ marginTop: '1rem' }}>
-            <p>Vista previa:</p>
-            <img src={imagenUrl} alt="Vista previa" style={{ maxWidth: '100%', height: 'auto' }} />
+          <button type="button" onClick={handleAddSeccion} style={{ marginTop: '1rem', backgroundColor: '#007bff', color: 'white', padding: '0.5rem 1rem' }}>
+            + Agregar Sección
+          </button>
+
+          <ImageUpload onUpload={setImagenUrl} />
+          {imagenUrl && (
+            <div style={{ marginTop: '1rem' }}>
+              <p>Vista previa:</p>
+              <img src={imagenUrl} alt="Vista previa" style={{ maxWidth: '100%', height: 'auto' }} />
+            </div>
+          )}
+
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <button onClick={onClose} type="button" style={{ backgroundColor: 'red', color: 'white', padding: '0.5rem 1rem' }}>
+              Cancelar
+            </button>
+            <button type="submit" style={{ backgroundColor: 'green', color: 'white', padding: '0.5rem 1rem' }}>
+              Guardar
+            </button>
           </div>
-        )}
-
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <button onClick={onClose} type="button" style={{ backgroundColor: 'red', color: 'white', padding: '0.5rem 1rem' }}>
-            Cancelar
-          </button>
-          <button type="submit" style={{ backgroundColor: 'green', color: 'white', padding: '0.5rem 1rem' }}>
-            Guardar
-          </button>
-        </div>
-      </form>
+        </form>
+      </div>
     </Modal>
   );
 };
 
 export default CollectionModal;
+
 
 
 
