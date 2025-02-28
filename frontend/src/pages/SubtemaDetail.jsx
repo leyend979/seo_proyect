@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import axios from "axios";
 import CollectionModal from "../components/CollectionModal";
+import "../../src/index.css";
 
 const SubtemaDetail = () => {
   const { id, subIndex } = useParams();
@@ -46,17 +47,12 @@ const SubtemaDetail = () => {
 
   const handleSaveCollection = async (newCollection) => {
     try {
-      console.log("✅ Nueva colección a guardar:", newCollection);
-
       const updatedTema = { ...tema };
       const subtemaIndex = updatedTema.subtemas.findIndex(
         (st) => st._id === subtema._id
       );
 
-      if (subtemaIndex === -1) {
-        console.error("⛔ Subtema no encontrado en el tema.");
-        return;
-      }
+      if (subtemaIndex === -1) return;
 
       if (editingCollection) {
         updatedTema.subtemas[subtemaIndex].colecciones =
@@ -67,43 +63,31 @@ const SubtemaDetail = () => {
         updatedTema.subtemas[subtemaIndex].colecciones.push(newCollection);
       }
 
-      console.log("📌 Tema actualizado antes de enviar:", updatedTema);
-
       const res = await axios.put(
         `https://rkhqsv30-5173.uks1.devtunnels.ms/api/temas/${tema._id}`,
         updatedTema
       );
 
-      console.log("✅ Respuesta del servidor:", res.data);
-
       setTema(res.data);
       setSubtema(res.data.subtemas[subtemaIndex]);
-
       handleCloseModal();
     } catch (error) {
-      console.error("⛔ Error al guardar la colección:", error);
+      console.error("Error al guardar la colección:", error);
     }
   };
 
   const handleDeleteCollection = async (collectionId) => {
     try {
-      const updatedSubtemas = tema.subtemas.map((st) => {
-        if (st._id === subtema._id) {
-          return {
-            ...st,
-            colecciones: st.colecciones.filter((col) => col._id !== collectionId),
-          };
-        }
-        return st;
-      });
-
-      await axios.put(
-        `https://rkhqsv30-5173.uks1.devtunnels.ms/api/temas/${id}`,
-        {
-          ...tema,
-          subtemas: updatedSubtemas,
-        }
+      const updatedSubtemas = tema.subtemas.map((st) =>
+        st._id === subtema._id
+          ? { ...st, colecciones: st.colecciones.filter((col) => col._id !== collectionId) }
+          : st
       );
+
+      await axios.put(`https://rkhqsv30-5173.uks1.devtunnels.ms/api/temas/${id}`, {
+        ...tema,
+        subtemas: updatedSubtemas,
+      });
 
       setTema((prevTema) => ({ ...prevTema, subtemas: updatedSubtemas }));
       setSubtema(updatedSubtemas.find((st) => st._id === subtema._id));
@@ -113,127 +97,35 @@ const SubtemaDetail = () => {
   };
 
   return (
-    <div style={{ padding: "2rem" }}>
+    <div className="container">
       <Link to={`/temas/${id}`}>← Volver al tema</Link>
       <h2>{subtema.nombre}</h2>
       <p>Colecciones del subtema:</p>
-
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-          gap: "1rem",
-        }}
-      >
+      <div className="grid-container">
         {subtema.colecciones && subtema.colecciones.length > 0 ? (
-          subtema.colecciones.map((coleccion) => {
-            const contenidoParsed =
-              typeof coleccion.contenido === "string"
-                ? JSON.parse(coleccion.contenido)
-                : coleccion.contenido;
-
-            const columnCount = contenidoParsed.length;
-            const cardWidth = Math.max(columnCount * 250, 300);
-
-            return (
-              <div
-                key={coleccion._id}
-                style={{
-                  border: "1px solid #ddd",
-                  borderRadius: "8px",
-                  padding: "1rem",
-                  boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
-                  backgroundColor: "#fff",
-                  textAlign: "left",
-                  display: "flex",
-                  flexDirection: "column",
-                  width: `${cardWidth}px`,
-                  minWidth: "300px",
-                  maxWidth: "100%",
-                  overflow: "hidden",
-                  position: "relative",
-                  marginBottom: "1rem", // 🔹 Espaciado entre las cards
-                }}
-              >
-                <h3 style={{ textAlign: "center", marginBottom: "1rem" }}>
-                  {coleccion.nombre}
-                </h3>
-
-                {coleccion.imagenUrl && (
-                  <img
-                    src={coleccion.imagenUrl}
-                    alt={coleccion.nombre}
-                    style={{
-                      width: "100%",
-                      height: "120px",
-                      objectFit: "cover",
-                      borderRadius: "5px",
-                      marginBottom: "0.5rem",
-                    }}
-                  />
-                )}
-
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: `repeat(${columnCount}, 1fr)`,
-                    gap: "1rem",
-                    minWidth: "300px",
-                    width: "100%",
-                    maxWidth: "100%",
-                    marginBottom: "1rem", // 🔹 Espaciado antes de los botones
-                  }}
-                >
-                  {contenidoParsed.map((seccion, index) => (
-                    <div
-                      key={index}
-                      style={{
-                        padding: "1rem",
-                        border: "1px solid #ddd",
-                        borderRadius: "8px",
-                        backgroundColor: "#fff",
-                        minHeight: "150px",
-                        overflow: "hidden",
-                        wordWrap: "break-word",
-                      }}
-                    >
-                      {seccion.tituloSecundario && (
-                        <h4 style={{ textAlign: "center" }}>
-                          {seccion.tituloSecundario}
-                        </h4>
-                      )}
-                      <div dangerouslySetInnerHTML={{ __html: seccion.contenido }} />
-                    </div>
-                  ))}
-                </div>
-
-                {/* 🔹 Botones fuera de la caja del contenido */}
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "flex-end",
-                    gap: "1rem",
-                  }}
-                >
-                  <button onClick={() => handleOpenModal(coleccion)}>
-                    ✏️ Editar
-                  </button>
-                  <button onClick={() => handleDeleteCollection(coleccion._id)}>
-                    🗑️ Eliminar
-                  </button>
-                </div>
+          subtema.colecciones.map((coleccion) => (
+            <div key={coleccion._id} className="card">
+              <h3 className="card-title">{coleccion.nombre}</h3>
+              {coleccion.imagenUrl && <img src={coleccion.imagenUrl} alt={coleccion.nombre} />}
+              <div className="card-content">
+                {JSON.parse(coleccion.contenido).map((seccion, index) => (
+                  <div key={index} className="section">
+                    {seccion.tituloSecundario && <h4 className="section-title">{seccion.tituloSecundario}</h4>}
+                    <div dangerouslySetInnerHTML={{ __html: seccion.contenido }} />
+                  </div>
+                ))}
               </div>
-            );
-          })
+              <div className="buttons">
+                <button onClick={() => handleOpenModal(coleccion)}>✏️ Editar</button>
+                <button onClick={() => handleDeleteCollection(coleccion._id)}>🗑️ Eliminar</button>
+              </div>
+            </div>
+          ))
         ) : (
           <p>No hay colecciones en este subtema.</p>
         )}
       </div>
-
-      <button className="boton-flotante" onClick={() => handleOpenModal()}>
-        +
-      </button>
-
+      <button className="floating-button" onClick={() => handleOpenModal()}>+</button>
       {isModalOpen && (
         <CollectionModal
           onSubmit={handleSaveCollection}
@@ -246,6 +138,7 @@ const SubtemaDetail = () => {
 };
 
 export default SubtemaDetail;
+
 
 
 
