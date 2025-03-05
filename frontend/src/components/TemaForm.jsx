@@ -1,110 +1,83 @@
-// src/components/TemaForm.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
-const TemaForm = ({ onSubmit }) => {
+const TemaForm = ({ onSubmit, tema, onClose }) => {
   const [nombre, setNombre] = useState('');
   const [descripcion, setDescripcion] = useState('');
-  // Para este ejemplo, podemos iniciar con un subtema y algunas colecciones
-  const [subtemas, setSubtemas] = useState([
-    {
-      nombre: '',
-      colecciones: [
-        { nombre: '', contenido: '' },
-        { nombre: '', contenido: '' },
-        { nombre: '', contenido: '' }
-      ]
+  const [subtemas, setSubtemas] = useState([]);
+
+  useEffect(() => {
+    console.log("Tema recibido:", tema);
+    if (tema) {
+      setNombre(tema.nombre || '');
+      setDescripcion(tema.descripcion || '');
+      setSubtemas(tema.subtemas || []);
     }
-  ]);
+  }, [tema]);
+
+  const handleAddSubtema = () => {
+    setSubtemas([...subtemas, { nombre: '' }]);
+  };
+
+  const handleChangeSubtema = (idx, value) => {
+    const newSubtemas = [...subtemas];
+    newSubtemas[idx].nombre = value;
+    setSubtemas(newSubtemas);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Enviar los datos al callback onSubmit del padre
     onSubmit({ nombre, descripcion, subtemas });
-    // Limpiar el formulario (opcional)
-    setNombre('');
-    setDescripcion('');
-    setSubtemas([
-      {
-        nombre: '',
-        colecciones: [
-          { nombre: '', contenido: '' },
-          { nombre: '', contenido: '' },
-          { nombre: '', contenido: '' }
-        ]
-      }
-    ]);
   };
 
-  // Nota: Aquí solo hacemos un formulario sencillo. Puedes extenderlo para agregar más subtemas y colecciones dinámicamente.
-
   return (
-    <form onSubmit={handleSubmit} style={{ marginBottom: '2rem' }}>
-      <h3>Crear Nuevo Tema</h3>
-      <div>
-        <label>Nombre:</label>
-        <input 
-          type="text" 
-          value={nombre} 
-          onChange={(e) => setNombre(e.target.value)} 
-          required
-        />
-      </div>
-      <div>
-        <label>Descripción:</label>
-        <textarea 
-          value={descripcion} 
-          onChange={(e) => setDescripcion(e.target.value)} 
-          rows={3}
-        ></textarea>
-      </div>
-      <h4>Subtema 1</h4>
-      <div>
-        <label>Nombre del Subtema:</label>
-        <input 
-          type="text" 
-          value={subtemas[0].nombre} 
-          onChange={(e) => {
-            const newSubtemas = [...subtemas];
-            newSubtemas[0].nombre = e.target.value;
-            setSubtemas(newSubtemas);
-          }} 
-          required
-        />
-      </div>
-      <h5>Colecciones</h5>
-      {subtemas[0].colecciones.map((col, idx) => (
-        <div key={idx} style={{ marginBottom: '1rem' }}>
+    <div className="modal-overlay">
+      <div className="modal-content">
+        <button className="close-button" onClick={onClose}>×</button>
+        <h3>{tema ? 'Editar Tema' : 'Crear Nuevo Tema'}</h3>
+        <form onSubmit={handleSubmit}>
           <div>
-            <label>Nombre de la Colección:</label>
+            <label>Nombre:</label>
             <input 
               type="text" 
-              value={col.nombre} 
-              onChange={(e) => {
-                const newSubtemas = [...subtemas];
-                newSubtemas[0].colecciones[idx].nombre = e.target.value;
-                setSubtemas(newSubtemas);
-              }} 
-              required
+              value={nombre} 
+              onChange={(e) => setNombre(e.target.value)} 
+              required 
             />
           </div>
           <div>
-            <label>Contenido:</label>
-            <input 
-              type="text" 
-              value={col.contenido} 
-              onChange={(e) => {
-                const newSubtemas = [...subtemas];
-                newSubtemas[0].colecciones[idx].contenido = e.target.value;
-                setSubtemas(newSubtemas);
-              }} 
-              required
-            />
+            <label>Descripción:</label>
+            <ReactQuill value={descripcion} onChange={setDescripcion} />
           </div>
-        </div>
-      ))}
-      <button type="submit">Crear Tema</button>
-    </form>
+
+          <h4>Subtemas</h4>
+          {subtemas.map((subtema, idx) => (
+            <div key={idx} className="subtema-item">
+              <input 
+                type="text" 
+                value={subtema.nombre} 
+                onChange={(e) => handleChangeSubtema(idx, e.target.value)} 
+                placeholder="Nombre del Subtema" 
+                required 
+              />
+            </div>
+          ))}
+          <button type="button" onClick={handleAddSubtema}>+ Agregar Subtema</button>
+          <button type="button" onClick={() => handleRemoveSubtitulo(idx)}>🗑</button>
+
+          <div className="buttons">
+            <button type="submit">{tema ? 'Actualizar' : 'Crear'}</button>
+            <button type="button" onClick={onClose}>Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 };
 
 export default TemaForm;
+
+
+
+

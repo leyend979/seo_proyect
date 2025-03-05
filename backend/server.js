@@ -2,6 +2,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const temaRoutes = require('./routes/temaRoutes');
+const tituloRoutes = require('./routes/tituloRoutes');
 const flashcardRoutes = require('./routes/flashcardRoutes');
 const uploadRoutes = require('./routes/routesUpload'); // Importa la ruta de subida
 
@@ -22,6 +23,7 @@ app.use(cors()); // Permitir CORS
 
 // Rutas
 app.use('/api/temas', temaRoutes);
+app.use('/api/titulos', tituloRoutes);
 app.use('/api/flashcards', flashcardRoutes);
 app.use('/api', uploadRoutes); // Esto montará el endpoint /api/upload
 
