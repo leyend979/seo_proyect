@@ -195,3 +195,60 @@ button:focus-visible {
 }
 
 
+.flashcard-sidebar {
+  width: 300px;
+  background: #f5f5f5;
+  padding: 20px;
+  position: fixed;
+  right: 0;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  box-shadow: -3px 0 5px rgba(0, 0, 0, 0.2);
+}
+
+.flashcard-form input, .flashcard-form textarea {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.flashcard-form textarea {
+  height: 100px;
+  resize: vertical;
+}
+
+.flashcard-form button {
+  width: 100%;
+  padding: 8px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.flashcard-form button:hover {
+  background: #0056b3;
+}
+
+.flashcard-list {
+  margin-top: 20px;
+}
+
+.flashcard-item {
+  background: white;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.flashcard-actions button {
+  margin-right: 5px;
+  cursor: pointer;
+  background: none;
+  border: none;
+}

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import axios from "axios";
 import CollectionModal from "../components/CollectionModal";
+import FlashcardSidebar from "../pages/Flashcards"; // ✅ Ruta corregida
 import "../../src/index.css";
 
 const SubtemaDetail = () => {
@@ -15,9 +16,7 @@ const SubtemaDetail = () => {
   useEffect(() => {
     const fetchTema = async () => {
       try {
-        const res = await axios.get(
-          `https://rkhqsv30-5173.uks1.devtunnels.ms/api/temas/${id}`
-        );
+        const res = await axios.get(`https://rkhqsv30-5173.uks1.devtunnels.ms/api/temas/${id}`);
         setTema(res.data);
         const subIdx = parseInt(subIndex, 10);
         if (res.data.subtemas && res.data.subtemas.length > subIdx) {
@@ -35,30 +34,30 @@ const SubtemaDetail = () => {
   if (loading) return <p>Cargando...</p>;
   if (!tema || !subtema) return <p>No se encontró el subtema.</p>;
 
+  // 🔥 Abrir el modal para editar o agregar colección
   const handleOpenModal = (collection = null) => {
     setEditingCollection(collection);
     setIsModalOpen(true);
   };
 
+  // 🔥 Cerrar el modal
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingCollection(null);
   };
 
+  // 🔥 Guardar o actualizar colección
   const handleSaveCollection = async (newCollection) => {
     try {
       const updatedTema = { ...tema };
-      const subtemaIndex = updatedTema.subtemas.findIndex(
-        (st) => st._id === subtema._id
-      );
+      const subtemaIndex = updatedTema.subtemas.findIndex((st) => st._id === subtema._id);
 
       if (subtemaIndex === -1) return;
 
       if (editingCollection) {
-        updatedTema.subtemas[subtemaIndex].colecciones =
-          updatedTema.subtemas[subtemaIndex].colecciones.map((col) =>
-            col._id === editingCollection._id ? newCollection : col
-          );
+        updatedTema.subtemas[subtemaIndex].colecciones = updatedTema.subtemas[subtemaIndex].colecciones.map((col) =>
+          col._id === editingCollection._id ? newCollection : col
+        );
       } else {
         updatedTema.subtemas[subtemaIndex].colecciones.push(newCollection);
       }
@@ -76,6 +75,7 @@ const SubtemaDetail = () => {
     }
   };
 
+  // 🔥 Eliminar colección
   const handleDeleteCollection = async (collectionId) => {
     try {
       const updatedSubtemas = tema.subtemas.map((st) =>
@@ -95,37 +95,49 @@ const SubtemaDetail = () => {
       console.error("Error al eliminar la colección:", error);
     }
   };
+  console.log("🔍 subtemaId en SubtemaDetail:", subtema._id);
 
   return (
-    <div className="container">
+    <div className="subtema-container">
       <Link to={`/temas/${id}`}>← Volver al tema</Link>
       <h2>{subtema.nombre}</h2>
       <p>Colecciones del subtema:</p>
-      <div className="grid-container">
-        {subtema.colecciones && subtema.colecciones.length > 0 ? (
-          subtema.colecciones.map((coleccion) => (
-            <div key={coleccion._id} className="card">
-              <h3 className="card-title">{coleccion.nombre}</h3>
-              {coleccion.imagenUrl && <img src={coleccion.imagenUrl} alt={coleccion.nombre} />}
-              <div className="card-content">
-                {JSON.parse(coleccion.contenido).map((seccion, index) => (
-                  <div key={index} className="section">
-                    {seccion.tituloSecundario && <h4 className="section-title">{seccion.tituloSecundario}</h4>}
-                    <div dangerouslySetInnerHTML={{ __html: seccion.contenido }} />
-                  </div>
-                ))}
+
+      <div className="main-content">
+        <div className="grid-container">
+          {subtema.colecciones && subtema.colecciones.length > 0 ? (
+            subtema.colecciones.map((coleccion) => (
+              <div key={coleccion._id} className="card">
+                <h3 className="card-title">{coleccion.nombre}</h3>
+                {coleccion.imagenUrl && <img src={coleccion.imagenUrl} alt={coleccion.nombre} />}
+                <div className="card-content">
+                  {JSON.parse(coleccion.contenido).map((seccion, index) => (
+                    <div key={index} className="section">
+                      {seccion.tituloSecundario && <h4 className="section-title">{seccion.tituloSecundario}</h4>}
+                      <div dangerouslySetInnerHTML={{ __html: seccion.contenido }} />
+                    </div>
+                  ))}
+                </div>
+
+                {/* 🔥 Botones de edición y eliminación */}
+                <div className="buttons">
+                  <button onClick={() => handleOpenModal(coleccion)}>✏️ Editar</button>
+                  <button onClick={() => handleDeleteCollection(coleccion._id)}>🗑️ Eliminar</button>
+                </div>
               </div>
-              <div className="buttons">
-                <button onClick={() => handleOpenModal(coleccion)}>✏️ Editar</button>
-                <button onClick={() => handleDeleteCollection(coleccion._id)}>🗑️ Eliminar</button>
-              </div>
-            </div>
-          ))
-        ) : (
-          <p>No hay colecciones en este subtema.</p>
-        )}
+            ))
+          ) : (
+            <p>No hay colecciones en este subtema.</p>
+          )}
+        </div>
+
+        {/* 🔥 Pasamos subtemaId y temaId a FlashcardSidebar */}
+        <FlashcardSidebar temaId={id} subtemaId={subtema._id} />
+
+        {/* Botón flotante para añadir colección */}
+        <button className="floating-button" onClick={() => handleOpenModal()}>+</button>
       </div>
-      <button className="floating-button" onClick={() => handleOpenModal()}>+</button>
+
       {isModalOpen && (
         <CollectionModal
           onSubmit={handleSaveCollection}
@@ -138,14 +150,3 @@ const SubtemaDetail = () => {
 };
 
 export default SubtemaDetail;
-
-
-
-
-
-
-
-
-
-
-
