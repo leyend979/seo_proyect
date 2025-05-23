@@ -10,7 +10,7 @@ const TemaDetail = () => {
   useEffect(() => {
     const fetchTema = async () => {
       try {
-        const res = await axios.get(`https://rkhqsv30-5173.uks1.devtunnels.ms/api/temas/${id}`);
+        const res = await axios.get(`https://super-duper-goggles-r4v7w7wrggfx95v-5173.app.github.dev/api/temas/${id}`);
         setTema(res.data);
         setLoading(false);
       } catch (error) {

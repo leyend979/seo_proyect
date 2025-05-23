@@ -10,7 +10,7 @@ const Temas = () => {
 
   const fetchTemas = async () => {
     try {
-      const res = await axios.get('https://rkhqsv30-5173.uks1.devtunnels.ms/api/temas');
+      const res = await axios.get('https://super-duper-goggles-r4v7w7wrggfx95v-5173.app.github.dev/api/temas');
       setTemas(res.data);
     } catch (error) {
       console.error('Error al obtener temas:', error);
@@ -40,10 +40,10 @@ const Temas = () => {
     try {
       if (temaSeleccionado) {
         // Actualizar un tema existente
-        await axios.put(`https://rkhqsv30-5173.uks1.devtunnels.ms/api/temas/${temaSeleccionado._id}`, temaData);
+        await axios.put(`https://super-duper-goggles-r4v7w7wrggfx95v-5173.app.github.dev/api/temas/${temaSeleccionado._id}`, temaData);
       } else {
         // Crear un nuevo tema
-        await axios.post('https://rkhqsv30-5173.uks1.devtunnels.ms/api/temas', temaData);
+        await axios.post('https://super-duper-goggles-r4v7w7wrggfx95v-5173.app.github.dev/api/temas', temaData);
       }
       fetchTemas(); // Refrescar la lista
       handleCerrarFormulario();

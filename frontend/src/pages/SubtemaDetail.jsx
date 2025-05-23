@@ -16,7 +16,7 @@ const SubtemaDetail = () => {
   useEffect(() => {
     const fetchTema = async () => {
       try {
-        const res = await axios.get(`https://rkhqsv30-5173.uks1.devtunnels.ms/api/temas/${id}`);
+        const res = await axios.get(`https://super-duper-goggles-r4v7w7wrggfx95v-5173.app.github.dev/api/temas/${id}`);
         setTema(res.data);
         const subIdx = parseInt(subIndex, 10);
         if (res.data.subtemas && res.data.subtemas.length > subIdx) {
@@ -63,7 +63,7 @@ const SubtemaDetail = () => {
       }
 
       const res = await axios.put(
-        `https://rkhqsv30-5173.uks1.devtunnels.ms/api/temas/${tema._id}`,
+        `https://super-duper-goggles-r4v7w7wrggfx95v-5173.app.github.dev/api/temas/${tema._id}`,
         updatedTema
       );
 
@@ -84,7 +84,7 @@ const SubtemaDetail = () => {
           : st
       );
 
-      await axios.put(`https://rkhqsv30-5173.uks1.devtunnels.ms/api/temas/${id}`, {
+      await axios.put(`https://super-duper-goggles-r4v7w7wrggfx95v-5173.app.github.dev/api/temas/${id}`, {
         ...tema,
         subtemas: updatedSubtemas,
       });

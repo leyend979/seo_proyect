@@ -10,7 +10,7 @@ const Titulos = () => {
 
   const fetchTitulos = async () => {
     try {
-      const res = await axios.get('https://rkhqsv30-5173.uks1.devtunnels.ms/api/titulos');
+      const res = await axios.get('https://super-duper-goggles-r4v7w7wrggfx95v-5173.app.github.dev/api/titulos');
       setTitulos(res.data);
     } catch (error) {
       console.error('Error al obtener títulos:', error);
@@ -39,9 +39,9 @@ const Titulos = () => {
   const handleGuardarTitulo = async (tituloData) => {
     try {
       if (tituloSeleccionado) {
-        await axios.put(`https://rkhqsv30-5173.uks1.devtunnels.ms/api/titulos/${tituloSeleccionado._id}`, tituloData);
+        await axios.put(`https://super-duper-goggles-r4v7w7wrggfx95v-5173.app.github.dev/api/titulos/${tituloSeleccionado._id}`, tituloData);
       } else {
-        await axios.post('https://rkhqsv30-5173.uks1.devtunnels.ms/api/titulos', tituloData);
+        await axios.post('https://super-duper-goggles-r4v7w7wrggfx95v-5173.app.github.dev/api/titulos', tituloData);
       }
       fetchTitulos();
       handleCerrarFormulario();

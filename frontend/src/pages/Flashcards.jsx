@@ -18,7 +18,7 @@ const FlashcardSidebar = ({ subtemaId }) => {
   const fetchFlashcards = async () => {
     try {
       const res = await axios.get(
-        `https://rkhqsv30-5173.uks1.devtunnels.ms/api/flashcards/subtema/${subtemaId}`
+        `https://super-duper-goggles-r4v7w7wrggfx95v-5173.app.github.dev/api/flashcards/subtema/${subtemaId}`
       );
       setFlashcards(res.data);
     } catch (error) {
@@ -40,7 +40,7 @@ const FlashcardSidebar = ({ subtemaId }) => {
   
     try {
       const res = await axios.post(
-        "https://rkhqsv30-5173.uks1.devtunnels.ms/api/flashcards",
+        "https://super-duper-goggles-r4v7w7wrggfx95v-5173.app.github.dev/api/flashcards",
         { pregunta: question, respuesta: answer, subtemaId }
       );
   
@@ -61,7 +61,7 @@ const FlashcardSidebar = ({ subtemaId }) => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`https://rkhqsv30-5173.uks1.devtunnels.ms/api/flashcards/${id}`);
+      await axios.delete(`https://super-duper-goggles-r4v7w7wrggfx95v-5173.app.github.dev/api/flashcards/${id}`);
       setFlashcards(flashcards.filter(f => f._id !== id));
     } catch (error) {
       console.error("Error al eliminar la flashcard:", error);
