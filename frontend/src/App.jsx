@@ -1,12 +1,12 @@
-// src/App.jsx
 import React from 'react';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import Home from './pages/Home';
 import Temas from './pages/Temas';
 import Titulos from './pages/Titulos';
 import TemaDetail from './pages/TemaDetail';
-import SubtemaDetail from './pages/SubtemaDetail'; // Nuevo componente
+import SubtemaDetail from './pages/SubtemaDetail';
 import Flashcards from './pages/Flashcards';
+import ThreeColumnLayout from './components/ThreeColumnLayout'; // 👈 Importa aquí
 
 function App() {
   return (
@@ -15,8 +15,8 @@ function App() {
         <Link to="/">Inicio</Link> |{' '}
         <Link to="/temas">Temas</Link> |{' '}
         <Link to="/titulos">Títulos</Link> |{' '}
-        <Link to="/flashcards">Flashcards</Link>
-        
+        <Link to="/flashcards">Flashcards</Link> |{' '}
+        <Link to="/explorar">Explorar</Link>
       </nav>
       <Routes>
         <Route path="/" element={<Home />} />
@@ -27,11 +27,11 @@ function App() {
         <Route path="/temas/:id" element={<TemaDetail />} />
         <Route path="/temas/:id/subtemas/:subIndex" element={<SubtemaDetail />} />
         <Route path="/flashcards" element={<Flashcards />} />
+        <Route path="/explorar" element={<ThreeColumnLayout />} /> {/* 👈 Aquí se integra */}
       </Routes>
     </div>
   );
 }
 
 export default App;
-
 
