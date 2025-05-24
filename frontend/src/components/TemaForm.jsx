@@ -26,6 +26,13 @@ const TemaForm = ({ onSubmit, tema, onClose }) => {
     setSubtemas(newSubtemas);
   };
 
+  const handleRemoveSubtema = (idx) => {
+  const nuevos = [...subtemas];
+  nuevos.splice(idx, 1);
+  setSubtemas(nuevos);
+};
+
+
   const handleSubmit = (e) => {
     e.preventDefault();
     onSubmit({ nombre, descripcion, subtemas });
@@ -52,17 +59,18 @@ const TemaForm = ({ onSubmit, tema, onClose }) => {
           </div>
 
           <h4>Subtemas</h4>
-          {subtemas.map((subtema, idx) => (
-            <div key={idx} className="subtema-item">
-              <input 
-                type="text" 
-                value={subtema.nombre} 
-                onChange={(e) => handleChangeSubtema(idx, e.target.value)} 
-                placeholder="Nombre del Subtema" 
-                required 
-              />
-            </div>
-          ))}
+         {subtemas.map((subtema, idx) => (
+          <div key={idx} className="subtema-item">
+            <input 
+              type="text" 
+              value={subtema.nombre} 
+              onChange={(e) => handleChangeSubtema(idx, e.target.value)} 
+              placeholder="Nombre del Subtema" 
+              required 
+            />
+            <button type="button" onClick={() => handleRemoveSubtema(idx)}>🗑</button>
+          </div>
+        ))}
           <button type="button" onClick={handleAddSubtema}>+ Agregar Subtema</button>
           <button type="button" onClick={() => handleRemoveSubtitulo(idx)}>🗑</button>
 

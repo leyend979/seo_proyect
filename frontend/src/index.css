@@ -78,20 +78,35 @@ button:focus-visible {
 }
 
 .card {
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  width: 100%;
+  box-sizing: border-box;
   padding: 1rem;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  border: 1px solid #ccc;
+  border-radius: 6px;
   background-color: #fff;
-  text-align: left;
-  transition: width 0.3s ease;
-}
-
-.card-content {
+  margin-bottom: 1rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  justify-content: space-between;
+  min-height: 150px; /* ✅ Fuerza altura mínima para evitar "tarjetas apretadas" */
 }
+
+/* Asegura que el contenido incrustado se expanda */
+.card-content {
+  width: 100%;
+  flex-grow: 1;
+  display: block;
+}
+
+/* Neutraliza estilos embebidos que limiten el ancho */
+.card-content * {
+  max-width: 100% !important;
+  display: block;
+  box-sizing: border-box;
+}
+
+
+
 
 .section {
   padding: 1rem;
@@ -251,4 +266,169 @@ button:focus-visible {
   cursor: pointer;
   background: none;
   border: none;
+}
+
+.three-column-layout {
+  display: flex;
+  height: 100vh;
+}
+
+.column {
+  overflow-y: auto;
+  border-right: 1px solid #ccc;
+  padding: 1rem;
+}
+
+.column-temas,
+.column-subtemas {
+  width: 20%;
+  background-color: #f4f4f4;
+}
+
+.column-colecciones {
+  flex-grow: 1;
+  background-color: #ffffff;
+}
+
+.item {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  border-radius: 5px;
+  margin-bottom: 5px;
+}
+
+.item:hover {
+  background-color: #e0e0e0;
+}
+
+.selected {
+  background-color: #d0d0d0;
+  font-weight: bold;
+}
+.layout-container {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 240px;
+  min-width: 200px;
+  max-width: 280px;
+  border-right: 1px solid #ccc;
+  padding: 1rem;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.sidebar.temas {
+  background-color: #f9f9f9;
+}
+
+.sidebar.subtemas {
+  background-color: #f0f0f0;
+}
+
+.main-content {
+  flex-grow: 1;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.section h4 {
+  margin-top: 0;
+}
+
+.item {
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background-color: #fff;
+}
+
+.item:hover {
+  background-color: #eaeaea;
+}
+
+.item.selected {
+  background-color: #dbeafe;
+  font-weight: bold;
+}
+
+.item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.item-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-right: 8px;
+  flex: 1 1 auto;
+}
+
+.item-buttons-top {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.item-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+
+
+.item-buttons button {
+  font-size: 0.75rem;
+  padding: 2px 4px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+ .card {
+  width: 100%;
+  box-sizing: border-box;
+  max-width: 100%;
+  padding: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background-color: #fff;
+  margin-bottom: 1rem;
+}
+
+
+.buttons {
+  margin-top: 0.5rem;
+  display: flex;
+  gap: 8px;
+}
+
+.floating-button {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  font-size: 1.5rem;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  cursor: pointer;
+}
+.coleccion-seccion h6 {
+  margin-top: 0.5rem;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #333;
 }
