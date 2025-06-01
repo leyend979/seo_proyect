@@ -13,7 +13,7 @@ const ThreeColumnLayout = () => {
   const [coleccionEditar, setColeccionEditar] = useState(null);
 
   useEffect(() => {
-    axios.get('https://super-duper-goggles-r4v7w7wrggfx95v-5173.app.github.dev/api/temas')
+    axios.get('https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/temas')
       .then(res => setTemas(res.data))
       .catch(err => console.error('Error al cargar temas:', err));
   }, []);
@@ -41,22 +41,41 @@ const ThreeColumnLayout = () => {
     setMostrarModalTema(false);
   };
 
-  const actualizarColeccion = (nuevaColeccion) => {
-    const nuevosTemas = [...temas];
-    const temaIdx = nuevosTemas.findIndex(t => t._id === temaSeleccionado._id);
-    const subtemaIdx = nuevosTemas[temaIdx].subtemas.findIndex(s => s._id === subtemaSeleccionado._id);
+ const actualizarColeccion = (nuevaColeccion) => {
+  const nuevosTemas = [...temas];
+  const temaIdx = nuevosTemas.findIndex(t => t._id === temaSeleccionado?._id);
+  if (temaIdx === -1) {
+    console.error("Tema no encontrado");
+    return;
+  }
 
-    if (coleccionEditar) {
-      const colecciones = nuevosTemas[temaIdx].subtemas[subtemaIdx].colecciones;
-      const idx = colecciones.findIndex(c => c._id === coleccionEditar._id);
+  const subtemaIdx = nuevosTemas[temaIdx].subtemas?.findIndex(s => s._id === subtemaSeleccionado?._id);
+  if (subtemaIdx === -1 || subtemaIdx === undefined) {
+    console.error("Subtema no encontrado");
+    return;
+  }
+
+  // Asegurar que `colecciones` está definido como array
+  if (!Array.isArray(nuevosTemas[temaIdx].subtemas[subtemaIdx].colecciones)) {
+    nuevosTemas[temaIdx].subtemas[subtemaIdx].colecciones = [];
+  }
+
+  if (coleccionEditar) {
+    const colecciones = nuevosTemas[temaIdx].subtemas[subtemaIdx].colecciones;
+    const idx = colecciones.findIndex(c => c._id === coleccionEditar._id);
+    if (idx !== -1) {
       colecciones[idx] = { ...coleccionEditar, ...nuevaColeccion };
     } else {
-      nuevosTemas[temaIdx].subtemas[subtemaIdx].colecciones.push(nuevaColeccion);
+      console.warn("Colección a editar no encontrada");
     }
+  } else {
+    nuevosTemas[temaIdx].subtemas[subtemaIdx].colecciones.push(nuevaColeccion);
+  }
 
-    setTemas(nuevosTemas);
-    cerrarModalColeccion();
-  };
+  setTemas(nuevosTemas);
+  cerrarModalColeccion();
+};
+
 
   const eliminarColeccion = (coleccionId) => {
     const nuevosTemas = [...temas];

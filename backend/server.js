@@ -3,7 +3,9 @@ const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const temaRoutes = require('./routes/temaRoutes');
 const tituloRoutes = require('./routes/tituloRoutes');
+const proyectoRoutes = require('./routes/proyectoRoutes');
 const flashcardRoutes = require('./routes/flashcardRoutes');
+const coleccionesRoutes = require('./routes/coleccionesRoutes'); // Ruta al archivo que acabas de crear
 const uploadRoutes = require('./routes/routesUpload'); // Importa la ruta de subida
 
 
@@ -19,12 +21,24 @@ app.use(express.json()); // Middleware para parsear JSON
 
 //habilitar cors
 const cors = require('cors');
-app.use(cors()); // Permitir CORS
+
+const allowedOrigins = [
+  'https://glorious-space-system-v64w69qgggp26xv-5174.app.github.dev', // tu frontend
+  'http://localhost:5174' // opcional, para desarrollo local
+];
+
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true, // si usas cookies o auth headers
+}));
 
 // Rutas
 app.use('/api/temas', temaRoutes);
 app.use('/api/titulos', tituloRoutes);
-app.use('/api/flashcards', flashcardRoutes);
+app.use('/api/proyectos', proyectoRoutes);
+app.use('/api/colecciones', coleccionesRoutes);
+
+//app.use('/api/flashcards', flashcardRoutes);
 app.use('/api', uploadRoutes); // Esto montará el endpoint /api/upload
 
 // Middleware para manejar errores

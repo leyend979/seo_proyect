@@ -1,25 +1,26 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
-import Home from './pages/Home';
-import Flashcards from './pages/Flashcards';
-import ThreeColumnLayout from './components/ThreeColumnLayout'; // 👈 Importa aquí
+import React, { useState } from 'react';
+import { Routes, Route } from 'react-router-dom';
+import Proyectos from './pages/Proyectos';
+import ThreeColumnLayout from './components/ThreeColumnLayout';
+import Navbar from './components/Navbar';
+import ProyectoWrapper from './components/ProyectoWrapper';
 
 function App() {
+  const [proyectoActual, setProyectoActual] = useState(null);
+
   return (
-    <div>
-      <nav style={{ padding: '1rem', background: '#eee' }}>
-        <Link to="/">Inicio</Link> |{' '}
-        <Link to="/flashcards">Flashcards</Link> |{' '}
-        <Link to="/explorar">Explorar</Link>
-      </nav>
+    <>
+      <Navbar proyectoActual={proyectoActual} setProyectoActual={setProyectoActual} />
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/flashcards" element={<Flashcards />} />
-        <Route path="/explorar" element={<ThreeColumnLayout />} /> {/* 👈 Aquí se integra */}
+        <Route path="/" element={<Proyectos />} />
+        <Route path="/proyecto/:proyectoId" element={<ProyectoWrapper setProyectoActual={setProyectoActual} />} />
+        
       </Routes>
-    </div>
+    </>
   );
 }
 
 export default App;
+
+
 
