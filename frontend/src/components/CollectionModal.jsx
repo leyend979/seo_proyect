@@ -4,6 +4,19 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import ImageUpload from './imagenUpload';
 
+
+// Opciones personalizadas para la barra de herramientas de ReactQuill
+const toolbarOptions = [
+  [{ header: [1, 2, false] }],
+  ['bold', 'italic', 'underline'],
+  [{ list: 'ordered' }, { list: 'bullet' }],
+  ['link', 'image'],
+  ['code-block'], // ✅ Aquí se activa el bloque de código
+  ['clean']
+];
+
+
+
 const CollectionModal = ({ onSubmit, initialData = null, onClose }) => {
   const [nombre, setNombre] = useState('');
   const [imagenUrl, setImagenUrl] = useState('');
@@ -87,10 +100,19 @@ const CollectionModal = ({ onSubmit, initialData = null, onClose }) => {
                 style={{ width: '100%', padding: '0.5rem' }}
               />
               <label>Contenido:</label><br/>
-              <ReactQuill
-                value={seccion.contenido}
-                onChange={(value) => handleChangeSeccion(index, 'contenido', value)}
-              />
+           <ReactQuill
+              value={seccion.contenido}
+              onChange={(value) => handleChangeSeccion(index, 'contenido', value)}
+              modules={{ toolbar: toolbarOptions }}
+              formats={[
+                'header',
+                'bold', 'italic', 'underline',
+                'list', 'bullet',
+                'link', 'image',
+                'code-block' // ✅ Necesario para que el bloque funcione
+              ]}
+            />
+
               {secciones.length > 1 && (
                 <button
                   type="button"

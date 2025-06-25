@@ -11,6 +11,7 @@ const ThreeColumnLayout = () => {
   const [mostrarModalColeccion, setMostrarModalColeccion] = useState(false);
   const [mostrarModalTema, setMostrarModalTema] = useState(false);
   const [coleccionEditar, setColeccionEditar] = useState(null);
+  const [coleccionExpandida, setColeccionExpandida] = useState(null);
 
   useEffect(() => {
     axios.get('https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/temas')
@@ -41,46 +42,37 @@ const ThreeColumnLayout = () => {
     setMostrarModalTema(false);
   };
 
- const actualizarColeccion = (nuevaColeccion) => {
-  const nuevosTemas = [...temas];
-  const temaIdx = nuevosTemas.findIndex(t => t._id === temaSeleccionado?._id);
-  if (temaIdx === -1) {
-    console.error("Tema no encontrado");
-    return;
-  }
+  const actualizarColeccion = (nuevaColeccion) => {
+    const nuevosTemas = [...temas];
+    const temaIdx = nuevosTemas.findIndex(t => t._id === temaSeleccionado?._id);
+    if (temaIdx === -1) return;
 
-  const subtemaIdx = nuevosTemas[temaIdx].subtemas?.findIndex(s => s._id === subtemaSeleccionado?._id);
-  if (subtemaIdx === -1 || subtemaIdx === undefined) {
-    console.error("Subtema no encontrado");
-    return;
-  }
+    const subtemaIdx = nuevosTemas[temaIdx].subtemas?.findIndex(s => s._id === subtemaSeleccionado?._id);
+    if (subtemaIdx === -1 || subtemaIdx === undefined) return;
 
-  // Asegurar que `colecciones` está definido como array
-  if (!Array.isArray(nuevosTemas[temaIdx].subtemas[subtemaIdx].colecciones)) {
-    nuevosTemas[temaIdx].subtemas[subtemaIdx].colecciones = [];
-  }
-
-  if (coleccionEditar) {
-    const colecciones = nuevosTemas[temaIdx].subtemas[subtemaIdx].colecciones;
-    const idx = colecciones.findIndex(c => c._id === coleccionEditar._id);
-    if (idx !== -1) {
-      colecciones[idx] = { ...coleccionEditar, ...nuevaColeccion };
-    } else {
-      console.warn("Colección a editar no encontrada");
+    if (!Array.isArray(nuevosTemas[temaIdx].subtemas[subtemaIdx].colecciones)) {
+      nuevosTemas[temaIdx].subtemas[subtemaIdx].colecciones = [];
     }
-  } else {
-    nuevosTemas[temaIdx].subtemas[subtemaIdx].colecciones.push(nuevaColeccion);
-  }
 
-  setTemas(nuevosTemas);
-  cerrarModalColeccion();
-};
+    if (coleccionEditar) {
+      const colecciones = nuevosTemas[temaIdx].subtemas[subtemaIdx].colecciones;
+      const idx = colecciones.findIndex(c => c._id === coleccionEditar._id);
+      if (idx !== -1) {
+        colecciones[idx] = { ...coleccionEditar, ...nuevaColeccion };
+      }
+    } else {
+      nuevosTemas[temaIdx].subtemas[subtemaIdx].colecciones.push(nuevaColeccion);
+    }
 
+    setTemas(nuevosTemas);
+    cerrarModalColeccion();
+  };
 
   const eliminarColeccion = (coleccionId) => {
     const nuevosTemas = [...temas];
     const temaIdx = nuevosTemas.findIndex(t => t._id === temaSeleccionado._id);
     const subtemaIdx = nuevosTemas[temaIdx].subtemas.findIndex(s => s._id === subtemaSeleccionado._id);
+
     nuevosTemas[temaIdx].subtemas[subtemaIdx].colecciones =
       nuevosTemas[temaIdx].subtemas[subtemaIdx].colecciones.filter(c => c._id !== coleccionId);
 
@@ -117,15 +109,14 @@ const ThreeColumnLayout = () => {
     cerrarModalTema();
     setTemaSeleccionado(null);
   };
-  
 
   return (
     <div className="layout-container">
-      {/* Sidebar de Temas */}
+      {/* Sidebar Temas */}
       <div className="sidebar temas">
         <h4>Temas</h4>
         {temas.map(tema => (
-         <div
+          <div
             key={tema._id}
             className={`item ${temaSeleccionado?._id === tema._id ? 'selected' : ''}`}
             onClick={() => seleccionarTema(tema)}
@@ -155,12 +146,10 @@ const ThreeColumnLayout = () => {
               </div>
             </div>
           </div>
-
-
         ))}
       </div>
 
-      {/* Sidebar de Subtemas */}
+      {/* Sidebar Subtemas */}
       <div className="sidebar subtemas">
         <h4>Subtemas</h4>
         {temaSeleccionado?.subtemas.map(subtema => (
@@ -176,14 +165,14 @@ const ThreeColumnLayout = () => {
 
       {/* Contenido Principal */}
       <div className="main-content">
-        <div className="header">
+        <div className="header-row">
           <h4>Colecciones</h4>
           {subtemaSeleccionado && (
             <button onClick={() => abrirModalColeccion()}>+ Nueva colección</button>
           )}
         </div>
-        
-        {subtemaSeleccionado?.colecciones?.map(coleccion => {
+
+        {subtemaSeleccionado?.colecciones?.map((coleccion) => {
           let secciones = [];
 
           try {
@@ -195,28 +184,57 @@ const ThreeColumnLayout = () => {
             secciones = [{ tituloSecundario: '', contenido: coleccion.contenido }];
           }
 
+          const estaExpandida = coleccionExpandida === coleccion._id;
+
           return (
             <div key={coleccion._id} className="card">
-              <h5>{coleccion.nombre}</h5>
-              <div className="card-content">
-                {secciones.map((sec, idx) => (
-                  <div key={idx} className="coleccion-seccion">
-                    {sec.tituloSecundario && <h6>{sec.tituloSecundario}</h6>}
-                    <div dangerouslySetInnerHTML={{ __html: sec.contenido }} />
+              <div
+                className="card-header"
+                onClick={() => setColeccionExpandida(estaExpandida ? null : coleccion._id)}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  cursor: 'pointer',
+                  background: '#f1f1f1',
+                  padding: '0.75rem 1rem',
+                  borderBottom: '1px solid #ccc',
+                }}
+              >
+                <h5 style={{ margin: 0 }}>{coleccion.nombre}</h5>
+                <span>{estaExpandida ? '▲' : '▼'}</span>
+              </div>
+
+              {estaExpandida && (
+                <div className="card-content" style={{ padding: '1rem' }}>
+                  {secciones.map((sec, idx) => (
+                    <div key={idx} className="coleccion-seccion" style={{ marginBottom: '1rem' }}>
+                      <h4 style={{
+                        fontSize: '1.25rem',
+                        fontWeight: '600',
+                        marginBottom: '0.5rem',
+                        marginTop: '0.5rem'
+                      }}>
+                        {sec.tituloSecundario}
+                      </h4>
+                      <div
+                        className="card-content"
+                        dangerouslySetInnerHTML={{ __html: sec.contenido }}
+                      />
+                    </div>
+                  ))}
+                  <div className="buttons" style={{ display: 'flex', gap: '1rem' }}>
+                    <button onClick={() => abrirModalColeccion(coleccion)}>Editar</button>
+                    <button onClick={() => eliminarColeccion(coleccion._id)}>Eliminar</button>
                   </div>
-                ))}
-              </div>
-              <div className="buttons">
-                <button onClick={() => abrirModalColeccion(coleccion)}>Editar</button>
-                <button onClick={() => eliminarColeccion(coleccion._id)}>Eliminar</button>
-              </div>
+                </div>
+              )}
             </div>
           );
         })}
-
       </div>
 
-      {/* Botón flotante para nuevo tema */}
+      {/* Botón flotante */}
       <button className="floating-button" onClick={abrirFormularioTema}>+</button>
 
       {/* Modales */}
@@ -239,6 +257,7 @@ const ThreeColumnLayout = () => {
 };
 
 export default ThreeColumnLayout;
+
 
 
 

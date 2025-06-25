@@ -77,6 +77,12 @@ button:focus-visible {
   gap: 1rem;
 }
 
+strong, b {
+  display: inline;
+  font-weight: bold;
+}
+
+
 .card {
   width: 100%;
   box-sizing: border-box;
@@ -88,21 +94,39 @@ button:focus-visible {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 150px; /* ✅ Fuerza altura mínima para evitar "tarjetas apretadas" */
+  min-height: 80px; /* ✅ Fuerza altura mínima para evitar "tarjetas apretadas" */
 }
 
-/* Asegura que el contenido incrustado se expanda */
-.card-content {
-  width: 100%;
-  flex-grow: 1;
-  display: block;
+/* Evita que etiquetas en línea como <strong> y <b> generen saltos indeseados */
+.card-content p,
+.card-content span,
+.card-content div,
+.card-content strong,
+.card-content b {
+  display: inline;
+  white-space: normal;
+  line-height: 1.6;
+  word-break: break-word;
 }
 
-/* Neutraliza estilos embebidos que limiten el ancho */
+.card-content p {
+  display: block; /* Solo los <p> deben ser block */
+  margin: 0 0 1em 0;
+}
+
+/* Limpieza general del contenido HTML */
 .card-content * {
-  max-width: 100% !important;
-  display: block;
   box-sizing: border-box;
+  max-width: 100%;
+}
+
+/* Asegura que no haya márgenes ocultos que empujen elementos */
+.card-content img,
+.card-content iframe {
+  max-width: 100%;
+  height: auto;
+  display: inline-block;
+  vertical-align: middle;
 }
 
 
@@ -431,4 +455,27 @@ button:focus-visible {
   font-size: 1rem;
   font-weight: bold;
   color: #333;
+}
+
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  margin-left: 1rem;
+  margin-right: 1rem;
+}
+.ql-editor {
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.ql-editor ol,
+.ql-editor ul {
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.ql-editor li {
+  margin-bottom: 0.5rem;
 }

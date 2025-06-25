@@ -26,8 +26,11 @@ const Proyectos = () => {
 
   return (
     <div >
-      <h2>Mis Proyectos</h2>
-      <button onClick={crearNuevoProyecto}>+ Nuevo Proyecto</button>
+      <div class="header-row">
+          <h2>Mis proyectos</h2>
+          <button onClick={crearNuevoProyecto}>+ Nuevo Proyecto</button>
+        </div>
+
       <ul>
         {proyectos.map(proy => (
           <li key={proy._id}>
