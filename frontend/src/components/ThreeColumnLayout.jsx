@@ -14,10 +14,9 @@ const ThreeColumnLayout = () => {
   const [coleccionExpandida, setColeccionExpandida] = useState(null);
 
   useEffect(() => {
-    axios.get('https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/temas')
-      .then(res => setTemas(res.data))
-      .catch(err => console.error('Error al cargar temas:', err));
-  }, []);
+  cargarTemas();
+}, []);
+
 
   const seleccionarTema = (tema) => {
     setTemaSeleccionado(tema);
@@ -42,31 +41,10 @@ const ThreeColumnLayout = () => {
     setMostrarModalTema(false);
   };
 
-  const actualizarColeccion = (nuevaColeccion) => {
-    const nuevosTemas = [...temas];
-    const temaIdx = nuevosTemas.findIndex(t => t._id === temaSeleccionado?._id);
-    if (temaIdx === -1) return;
-
-    const subtemaIdx = nuevosTemas[temaIdx].subtemas?.findIndex(s => s._id === subtemaSeleccionado?._id);
-    if (subtemaIdx === -1 || subtemaIdx === undefined) return;
-
-    if (!Array.isArray(nuevosTemas[temaIdx].subtemas[subtemaIdx].colecciones)) {
-      nuevosTemas[temaIdx].subtemas[subtemaIdx].colecciones = [];
-    }
-
-    if (coleccionEditar) {
-      const colecciones = nuevosTemas[temaIdx].subtemas[subtemaIdx].colecciones;
-      const idx = colecciones.findIndex(c => c._id === coleccionEditar._id);
-      if (idx !== -1) {
-        colecciones[idx] = { ...coleccionEditar, ...nuevaColeccion };
-      }
-    } else {
-      nuevosTemas[temaIdx].subtemas[subtemaIdx].colecciones.push(nuevaColeccion);
-    }
-
-    setTemas(nuevosTemas);
-    cerrarModalColeccion();
-  };
+ const actualizarColeccion = (nuevaColeccion) => {
+  cerrarModalColeccion();
+  cargarTemas(); // 🔁 Aquí recargas los datos reales desde el backend
+};
 
   const eliminarColeccion = (coleccionId) => {
     const nuevosTemas = [...temas];
@@ -109,6 +87,12 @@ const ThreeColumnLayout = () => {
     cerrarModalTema();
     setTemaSeleccionado(null);
   };
+  const cargarTemas = () => {
+  axios.get('https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/temas')
+    .then(res => setTemas(res.data))
+    .catch(err => console.error('Error al cargar temas:', err));
+};
+
 
   return (
     <div className="layout-container">

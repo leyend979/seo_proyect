@@ -6,6 +6,7 @@ const tituloRoutes = require('./routes/tituloRoutes');
 const proyectoRoutes = require('./routes/proyectoRoutes');
 const flashcardRoutes = require('./routes/flashcardRoutes');
 const coleccionesRoutes = require('./routes/coleccionesRoutes'); // Ruta al archivo que acabas de crear
+const sheetsRoutes = require('./routes/sheetsRoutes'); // Ruta al archivo que acabas de crear
 const uploadRoutes = require('./routes/routesUpload'); // Importa la ruta de subida
 
 
@@ -37,6 +38,7 @@ app.use('/api/temas', temaRoutes);
 app.use('/api/titulos', tituloRoutes);
 app.use('/api/proyectos', proyectoRoutes);
 app.use('/api/colecciones', coleccionesRoutes);
+app.use('/api/sheetsRoutes', sheetsRoutes);
 
 //app.use('/api/flashcards', flashcardRoutes);
 app.use('/api', uploadRoutes); // Esto montará el endpoint /api/upload
