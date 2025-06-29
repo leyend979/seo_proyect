@@ -11,10 +11,14 @@ const SubtemaSchema = new mongoose.Schema({
 });
 
 const TemaSchema = new mongoose.Schema({
-  nombre: { type: String, required: true, unique: true },
+  nombre: { type: String, required: true },
   descripcion: String,
-  subtemas: [SubtemaSchema]
+  subtemas: [SubtemaSchema],
+  proyecto: { type: mongoose.Schema.Types.ObjectId, ref: 'Proyecto', required: true } // ✅ AÑADE ESTO
 });
+
+
+
 
 const Tema = mongoose.model('Tema', TemaSchema);
 module.exports = Tema;

@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 
-const TemaForm = ({ onSubmit, tema, onClose }) => {
+const TemaForm = ({ onSubmit, tema, onClose, proyectoActual }) => {
+
   const [nombre, setNombre] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [subtemas, setSubtemas] = useState([]);
@@ -33,10 +34,14 @@ const TemaForm = ({ onSubmit, tema, onClose }) => {
 };
 
 
+
   const handleSubmit = (e) => {
-    e.preventDefault();
-    onSubmit({ nombre, descripcion, subtemas });
-  };
+  e.preventDefault();
+  onSubmit({ nombre, descripcion, subtemas, proyecto: proyectoActual._id });
+};
+
+
+
 
   return (
     <div className="modal-overlay">

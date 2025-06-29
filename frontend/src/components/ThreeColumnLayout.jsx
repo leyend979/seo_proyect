@@ -4,7 +4,7 @@ import CollectionModal from './CollectionModal';
 import TemaForm from './TemaForm';
 import "../../src/index.css";
 
-const ThreeColumnLayout = () => {
+const ThreeColumnLayout = ({ proyectoActual }) => {
   const [temas, setTemas] = useState([]);
   const [temaSeleccionado, setTemaSeleccionado] = useState(null);
   const [subtemaSeleccionado, setSubtemaSeleccionado] = useState(null);
@@ -13,9 +13,15 @@ const ThreeColumnLayout = () => {
   const [coleccionEditar, setColeccionEditar] = useState(null);
   const [coleccionExpandida, setColeccionExpandida] = useState(null);
 
-  useEffect(() => {
-  cargarTemas();
-}, []);
+
+ useEffect(() => {
+    if (proyectoActual?._id) {
+      setTemaSeleccionado(null);
+      setSubtemaSeleccionado(null);
+      setTemas([]); // Limpia también para evitar flicker de datos antiguos
+      cargarTemas(); // Vuelve a cargar temas del nuevo proyecto
+    }
+  }, [proyectoActual]);
 
 
   const seleccionarTema = (tema) => {
@@ -70,26 +76,23 @@ const ThreeColumnLayout = () => {
     }
   };
 
-  const guardarNuevoTema = (nuevoTema) => {
-    if (temaSeleccionado) {
-      const nuevosTemas = temas.map(t =>
-        t._id === temaSeleccionado._id ? { ...t, ...nuevoTema } : t
-      );
-      setTemas(nuevosTemas);
-    } else {
-      const temaConId = {
-        _id: Date.now().toString(),
-        ...nuevoTema
-      };
-      setTemas([...temas, temaConId]);
-    }
-
+  const guardarNuevoTema = async (nuevoTema) => {
+  try {
+    const res = await axios.post('https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/temas', nuevoTema);
+    setTemas([...temas, res.data]);
     cerrarModalTema();
     setTemaSeleccionado(null);
-  };
+  } catch (err) {
+    console.error('Error al guardar el tema:', err);
+  }
+};
+
   const cargarTemas = () => {
   axios.get('https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/temas')
-    .then(res => setTemas(res.data))
+    .then(res => {
+      const filtrados = res.data.filter(t => t.proyecto === proyectoActual._id);
+      setTemas(filtrados);
+    })
     .catch(err => console.error('Error al cargar temas:', err));
 };
 
@@ -230,12 +233,15 @@ const ThreeColumnLayout = () => {
         />
       )}
       {mostrarModalTema && (
-        <TemaForm
-          onSubmit={guardarNuevoTema}
-          onClose={cerrarModalTema}
-          tema={temaSeleccionado}
-        />
-      )}
+  <TemaForm
+  tema={temaSeleccionado}
+  onSubmit={guardarNuevoTema}
+  onClose={cerrarModalTema}
+  proyectoActual={proyectoActual}
+/>
+
+    )}
+
     </div>
   );
 };

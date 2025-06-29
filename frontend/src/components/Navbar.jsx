@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { data, useNavigate } from 'react-router-dom';
 
 const Navbar = ({ proyectoActual, setProyectoActual }) => {
   const [proyectos, setProyectos] = useState([]);
@@ -29,13 +29,15 @@ const Navbar = ({ proyectoActual, setProyectoActual }) => {
     }
 
     try {
+      
       const res = await axios.post('https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/proyectos', {
         nombre: nombre.trim()
       });
       setProyectos([...proyectos, res.data]);
       seleccionarProyecto(res.data._id);
+      console.log(data)
     } catch (err) {
-      console.error('Error creando proyecto:', err);
+      console.error('Error creando proyecto:', err.response?.data || err.message);
     }
   };
 

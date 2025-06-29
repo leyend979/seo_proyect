@@ -25,7 +25,8 @@ const ProyectoWrapper = ({ setProyectoActual }) => {
 
   if (!proyecto) return <div>Cargando proyecto...</div>;
 
-  return <ThreeColumnLayout proyecto={proyecto} />;
+  return <ThreeColumnLayout proyectoActual={proyecto} />;
+
 };
 
 export default ProyectoWrapper;

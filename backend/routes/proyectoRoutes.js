@@ -31,7 +31,7 @@ router.post('/', async (req, res) => {
     const guardado = await nuevo.save();
     res.status(201).json(guardado);
   } catch (err) {
-    res.status(400).json({ error: 'Error al crear el proyecto' });
+      res.status(500).json({ error: err.message });
   }
 });
 

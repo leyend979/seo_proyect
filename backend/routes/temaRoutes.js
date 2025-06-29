@@ -12,13 +12,17 @@ const router = express.Router();
  */
 router.get('/', async (req, res) => {
   try {
-    const temas = await Tema.find();
+    const { proyectoId } = req.query;
+    const temas = proyectoId
+      ? await Tema.find({ proyectoId })  // filtra por proyecto si lo hay
+      : await Tema.find();              // si no, devuelve todos (fallback)
     res.json(temas);
-  } catch (error) {
-    console.error("Error al obtener temas:", error);
-    res.status(500).json({ error: "Error interno del servidor" });
+  } catch (err) {
+    res.status(500).json({ error: 'Error al obtener temas' });
   }
 });
+
+
 // Ruta para obtener un tema individual por ID
 router.get('/:id', async (req, res) => {
   try {
@@ -40,19 +44,16 @@ router.get('/:id', async (req, res) => {
  */
 router.post('/', async (req, res) => {
   try {
-    const { nombre, descripcion, subtemas } = req.body;
-    const nuevoTema = new Tema({
-      nombre,
-      descripcion,
-      subtemas // Se espera que sea un arreglo de objetos { nombre, colecciones }
-    });
-    await nuevoTema.save();
-    res.status(201).json({ mensaje: "Tema creado con éxito", tema: nuevoTema });
-  } catch (error) {
-    console.error("Error al guardar tema:", error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    const { nombre, descripcion, subtemas, proyecto } = req.body;
+    const nuevoTema = new Tema({ nombre, descripcion, subtemas, proyecto });
+    const guardado = await nuevoTema.save();
+    res.status(201).json(guardado);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
   }
 });
+
 
 /**
  * PUT /api/temas/:id
