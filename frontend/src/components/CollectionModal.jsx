@@ -19,8 +19,6 @@ const CollectionModal = ({ onSubmit, initialData = null, onClose }) => {
   const [secciones, setSecciones] = useState([{ tituloSecundario: '', contenido: '' }]);
   const [sheetUrl, setSheetUrl] = useState('');
   const [sheetName, setSheetName] = useState('');
-  const [contenido, setContenido] = useState('');
-  
 
   const modalRef = useRef(null);
 
@@ -30,14 +28,11 @@ const CollectionModal = ({ onSubmit, initialData = null, onClose }) => {
       setImagenUrl(initialData.imagenUrl || '');
 
       try {
-        const contenidoParsed = JSON.parse(initialData.contenido);
-        if (Array.isArray(contenidoParsed)) {
-          setSecciones(contenidoParsed);
-        } else {
-          setSecciones([{ tituloSecundario: '', contenido: contenidoParsed }]);
-        }
-      } catch (error) {
-        console.warn('Contenido no es JSON válido, usando fallback');
+        const parsed = JSON.parse(initialData.contenido);
+        setSecciones(Array.isArray(parsed)
+          ? parsed
+          : [{ tituloSecundario: '', contenido: parsed }]);
+      } catch {
         setSecciones([{ tituloSecundario: '', contenido: '' }]);
       }
     }
@@ -49,47 +44,28 @@ const CollectionModal = ({ onSubmit, initialData = null, onClose }) => {
     }
   }, [secciones]);
 
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+    if (!nombre) return alert('El nombre es obligatorio.');
 
-const handleFormSubmit = async (e) => {
-  e.preventDefault();
-
-  if (!nombre) {
-    alert('El nombre de la colección es obligatorio.');
-    return;
-  }
-
-  try {
     const nuevaColeccion = {
       nombre,
-      contenido: JSON.stringify(secciones), // Las secciones son el "contenido"
-      imagenUrl // si estás usando imágenes
+      contenido: JSON.stringify(secciones),
+      imagenUrl
     };
 
-    const response = await fetch('https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/colecciones', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(nuevaColeccion)
-    });
-
-    if (!response.ok) {
-      throw new Error('Error al enviar los datos al servidor');
+    try {
+      await onSubmit(nuevaColeccion);
+    } catch (error) {
+      console.error('Error al guardar:', error);
+      alert('Error al guardar la colección');
     }
-
-    console.log('Guardado con éxito');
-    onClose(); // Cierra el modal
-  } catch (error) {
-    console.error('Error al enviar datos:', error);
-    alert('Hubo un error al guardar la colección.');
-  }
-};
-
+  };
 
   const handleChangeSeccion = (index, key, value) => {
-    const updatedSecciones = [...secciones];
-    updatedSecciones[index][key] = value;
-    setSecciones(updatedSecciones);
+    const updated = [...secciones];
+    updated[index][key] = value;
+    setSecciones(updated);
   };
 
   const handleAddSeccion = () => {
@@ -102,34 +78,24 @@ const handleFormSubmit = async (e) => {
     }
   };
 
-const handleLoadFromSheet = () => {
-  if (!sheetUrl || !sheetName) {
-    alert('Debes proporcionar la URL del spreadsheet y el nombre de la hoja.');
-    return;
-  }
+  const handleLoadFromSheet = () => {
+    if (!sheetUrl || !sheetName) return alert('Proporciona URL y nombre de hoja');
 
-  // Construir la URL del iframe a partir del enlace de Sheets
-  const sheetIdMatch = sheetUrl.match(/\/d\/(.*?)\//);
-  const sheetId = sheetIdMatch ? sheetIdMatch[1] : null;
+    const match = sheetUrl.match(/\/d\/(.*?)\//);
+    const sheetId = match?.[1];
 
-  if (!sheetId) {
-    alert('URL del spreadsheet no válida');
-    return;
-  }
+    if (!sheetId) return alert('URL inválida');
 
-  const embedUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:html&sheet=${encodeURIComponent(sheetName)}`;
+    const embedUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:html&sheet=${encodeURIComponent(sheetName)}`;
+    const iframeHTML = `<iframe src="${embedUrl}" width="100%" height="500" frameborder="0"></iframe>`;
 
-  const iframeHTML = `<iframe src="${embedUrl}" width="100%" height="500" frameborder="0"></iframe>`;
+    const nuevaSeccion = {
+      tituloSecundario: 'Datos desde Google Sheets',
+      contenido: iframeHTML
+    };
 
-  const nuevaSeccion = {
-    tituloSecundario: 'Datos desde Google Sheets',
-    contenido: iframeHTML
+    setSecciones([nuevaSeccion]);
   };
-
-  setSecciones([nuevaSeccion]); // o [...secciones, nuevaSeccion] si quieres añadirlo a lo anterior
-};
-
-
 
   return (
     <Modal isOpen={true} onClose={onClose}>
@@ -147,11 +113,9 @@ const handleLoadFromSheet = () => {
             />
           </div>
 
-
-          {/* NUEVO: Carga desde Google Sheets */}
+          {/* Google Sheets */}
           <div style={{ marginBottom: '1rem', border: '1px dashed #ccc', padding: '1rem' }}>
             <h4>Cargar desde Google Sheets</h4>
-            <label>URL del Spreadsheet:</label>
             <input
               type="text"
               value={sheetUrl}
@@ -159,7 +123,6 @@ const handleLoadFromSheet = () => {
               placeholder="https://docs.google.com/spreadsheets/d/..."
               style={{ width: '100%', marginBottom: '0.5rem' }}
             />
-            <label>Nombre de la Hoja:</label>
             <input
               type="text"
               value={sheetName}
@@ -172,33 +135,25 @@ const handleLoadFromSheet = () => {
             </button>
           </div>
 
-          {secciones.map((seccion, index) => (
-            <div key={index} style={{ marginBottom: '1rem', border: '1px solid #ddd', padding: '1rem', borderRadius: '5px' }}>
-              <label>Título Secundario (opcional):</label><br />
+          {secciones.map((sec, index) => (
+            <div key={index} style={{ border: '1px solid #ddd', padding: '1rem', marginBottom: '1rem' }}>
               <input
                 type="text"
-                value={seccion.tituloSecundario}
+                placeholder="Título Secundario (opcional)"
+                value={sec.tituloSecundario}
                 onChange={(e) => handleChangeSeccion(index, 'tituloSecundario', e.target.value)}
-                style={{ width: '100%', padding: '0.5rem' }}
+                style={{ width: '100%', marginBottom: '0.5rem' }}
               />
-              <label>Contenido:</label><br />
               <ReactQuill
-                value={seccion.contenido}
+                value={sec.contenido}
                 onChange={(value) => handleChangeSeccion(index, 'contenido', value)}
                 modules={{ toolbar: toolbarOptions }}
-                formats={[
-                  'header',
-                  'bold', 'italic', 'underline',
-                  'list', 'bullet',
-                  'link', 'image',
-                  'code-block'
-                ]}
               />
               {secciones.length > 1 && (
                 <button
                   type="button"
                   onClick={() => handleRemoveSeccion(index)}
-                  style={{ backgroundColor: 'red', color: 'white', padding: '0.5rem', marginTop: '0.5rem' }}
+                  style={{ backgroundColor: 'red', color: 'white', marginTop: '0.5rem' }}
                 >
                   Eliminar sección
                 </button>
@@ -206,27 +161,18 @@ const handleLoadFromSheet = () => {
             </div>
           ))}
 
-          <button
-            type="button"
-            onClick={handleAddSeccion}
-            style={{ marginTop: '1rem', backgroundColor: '#007bff', color: 'white', padding: '0.5rem 1rem' }}
-          >
+          <button type="button" onClick={handleAddSeccion} style={{ marginTop: '1rem', backgroundColor: '#007bff', color: 'white' }}>
             + Agregar Sección Manual
           </button>
 
           <ImageUpload onUpload={setImagenUrl} />
-          {imagenUrl && (
-            <div style={{ marginTop: '1rem' }}>
-              <p>Vista previa:</p>
-              <img src={imagenUrl} alt="Vista previa" style={{ maxWidth: '100%', height: 'auto' }} />
-            </div>
-          )}
+          {imagenUrl && <img src={imagenUrl} alt="Vista previa" style={{ maxWidth: '100%', marginTop: '1rem' }} />}
 
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem' }}>
-            <button onClick={onClose} type="button" style={{ backgroundColor: 'red', color: 'white', padding: '0.5rem 1rem' }}>
+            <button type="button" onClick={onClose} style={{ backgroundColor: 'red', color: 'white' }}>
               Cancelar
             </button>
-            <button type="submit" style={{ backgroundColor: 'green', color: 'white', padding: '0.5rem 1rem' }}>
+            <button type="submit" style={{ backgroundColor: 'green', color: 'white' }}>
               Guardar Colección
             </button>
           </div>
@@ -237,6 +183,7 @@ const handleLoadFromSheet = () => {
 };
 
 export default CollectionModal;
+
 
 
 

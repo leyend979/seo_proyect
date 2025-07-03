@@ -14,15 +14,11 @@ const ThreeColumnLayout = ({ proyectoActual }) => {
   const [coleccionExpandida, setColeccionExpandida] = useState(null);
 
 
- useEffect(() => {
-    if (proyectoActual?._id) {
-      setTemaSeleccionado(null);
-      setSubtemaSeleccionado(null);
-      setTemas([]); // Limpia también para evitar flicker de datos antiguos
-      cargarTemas(); // Vuelve a cargar temas del nuevo proyecto
-    }
-  }, [proyectoActual]);
-
+   useEffect(() => {
+    axios.get('https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/temas')
+      .then(res => setTemas(res.data))
+      .catch(err => console.error('Error al cargar temas:', err));
+  }, []);
 
   const seleccionarTema = (tema) => {
     setTemaSeleccionado(tema);
@@ -47,10 +43,31 @@ const ThreeColumnLayout = ({ proyectoActual }) => {
     setMostrarModalTema(false);
   };
 
- const actualizarColeccion = (nuevaColeccion) => {
-  cerrarModalColeccion();
-  cargarTemas(); // 🔁 Aquí recargas los datos reales desde el backend
-};
+  const actualizarColeccion = (nuevaColeccion) => {
+    const nuevosTemas = [...temas];
+    const temaIdx = nuevosTemas.findIndex(t => t._id === temaSeleccionado?._id);
+    if (temaIdx === -1) return;
+
+    const subtemaIdx = nuevosTemas[temaIdx].subtemas?.findIndex(s => s._id === subtemaSeleccionado?._id);
+    if (subtemaIdx === -1 || subtemaIdx === undefined) return;
+
+    if (!Array.isArray(nuevosTemas[temaIdx].subtemas[subtemaIdx].colecciones)) {
+      nuevosTemas[temaIdx].subtemas[subtemaIdx].colecciones = [];
+    }
+
+    if (coleccionEditar) {
+      const colecciones = nuevosTemas[temaIdx].subtemas[subtemaIdx].colecciones;
+      const idx = colecciones.findIndex(c => c._id === coleccionEditar._id);
+      if (idx !== -1) {
+        colecciones[idx] = { ...coleccionEditar, ...nuevaColeccion };
+      }
+    } else {
+      nuevosTemas[temaIdx].subtemas[subtemaIdx].colecciones.push(nuevaColeccion);
+    }
+
+    setTemas(nuevosTemas);
+    cerrarModalColeccion();
+  };
 
   const eliminarColeccion = (coleccionId) => {
     const nuevosTemas = [...temas];
@@ -76,26 +93,23 @@ const ThreeColumnLayout = ({ proyectoActual }) => {
     }
   };
 
-  const guardarNuevoTema = async (nuevoTema) => {
-  try {
-    const res = await axios.post('https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/temas', nuevoTema);
-    setTemas([...temas, res.data]);
+  const guardarNuevoTema = (nuevoTema) => {
+    if (temaSeleccionado) {
+      const nuevosTemas = temas.map(t =>
+        t._id === temaSeleccionado._id ? { ...t, ...nuevoTema } : t
+      );
+      setTemas(nuevosTemas);
+    } else {
+      const temaConId = {
+        _id: Date.now().toString(),
+        ...nuevoTema
+      };
+      setTemas([...temas, temaConId]);
+    }
+
     cerrarModalTema();
     setTemaSeleccionado(null);
-  } catch (err) {
-    console.error('Error al guardar el tema:', err);
-  }
-};
-
-  const cargarTemas = () => {
-  axios.get('https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/temas')
-    .then(res => {
-      const filtrados = res.data.filter(t => t.proyecto === proyectoActual._id);
-      setTemas(filtrados);
-    })
-    .catch(err => console.error('Error al cargar temas:', err));
-};
-
+  };
 
   return (
     <div className="layout-container">
@@ -228,20 +242,19 @@ const ThreeColumnLayout = ({ proyectoActual }) => {
       {mostrarModalColeccion && (
         <CollectionModal
           initialData={coleccionEditar}
-          onSubmit={actualizarColeccion}
+           onSubmit={actualizarColeccion}
           onClose={cerrarModalColeccion}
         />
       )}
+       {/* Modal de Tema */}
       {mostrarModalTema && (
-  <TemaForm
-  tema={temaSeleccionado}
-  onSubmit={guardarNuevoTema}
-  onClose={cerrarModalTema}
-  proyectoActual={proyectoActual}
-/>
-
-    )}
-
+        <TemaForm
+          tema={temaSeleccionado}
+          onSubmit={guardarNuevoTema}
+          onClose={cerrarModalTema}
+          proyectoActual={proyectoActual}
+        />
+      )}
     </div>
   );
 };

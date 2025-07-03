@@ -37,7 +37,22 @@ const TemaForm = ({ onSubmit, tema, onClose, proyectoActual }) => {
 
   const handleSubmit = (e) => {
   e.preventDefault();
-  onSubmit({ nombre, descripcion, subtemas, proyecto: proyectoActual._id });
+
+  // ⚠️ Limpia campos no necesarios que causan errores
+  const subtemasLimpios = subtemas.map(({ nombre, colecciones = [] }) => ({
+    nombre,
+    colecciones: colecciones.map(({ nombre, contenido }) => ({
+      nombre,
+      contenido
+    }))
+  }));
+
+  onSubmit({
+    nombre,
+    descripcion,
+    subtemas: subtemasLimpios,
+    proyecto: proyectoActual._id
+  });
 };
 
 
