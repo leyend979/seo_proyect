@@ -13,12 +13,23 @@ const ThreeColumnLayout = ({ proyectoActual }) => {
   const [coleccionEditar, setColeccionEditar] = useState(null);
   const [coleccionExpandida, setColeccionExpandida] = useState(null);
 
+ useEffect(() => {
+  if (!proyectoActual?._id) return;  // ⚠️ espera a que el proyecto esté cargado
 
-   useEffect(() => {
-    axios.get('https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/temas')
-      .then(res => setTemas(res.data))
-      .catch(err => console.error('Error al cargar temas:', err));
-  }, []);
+  const cargarTemas = async () => {
+    try {
+      const res = await axios.get(
+        `https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/temas?proyecto=${proyectoActual._id}`
+      );
+      setTemas(res.data);
+    } catch (err) {
+      console.error('Error al cargar temas:', err);
+    }
+  };
+
+  cargarTemas();
+}, [proyectoActual?._id]);
+
 
   const seleccionarTema = (tema) => {
     setTemaSeleccionado(tema);
@@ -84,32 +95,47 @@ const ThreeColumnLayout = ({ proyectoActual }) => {
     setMostrarModalTema(true);
   };
 
-  const eliminarTema = (temaId) => {
-    const nuevosTemas = temas.filter(t => t._id !== temaId);
-    setTemas(nuevosTemas);
-    if (temaSeleccionado?._id === temaId) {
-      setTemaSeleccionado(null);
-      setSubtemaSeleccionado(null);
-    }
-  };
+ const eliminarTema = async (id) => {
+  const confirmar = window.confirm('¿Estás seguro de que quieres eliminar este tema?');
+  if (!confirmar) return;
 
-  const guardarNuevoTema = (nuevoTema) => {
+  try {
+    await axios.delete(`https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/temas/${id}`);
+    alert('✅ Tema eliminado correctamente');
+    await cargarTemas(); // Recargar la lista
+  } catch (error) {
+    console.error('❌ Error al eliminar tema:', error);
+    alert('❌ Hubo un error al eliminar el tema');
+  }
+};
+
+
+const guardarNuevoTema = async (nuevoTema) => {
+  try {
     if (temaSeleccionado) {
-      const nuevosTemas = temas.map(t =>
-        t._id === temaSeleccionado._id ? { ...t, ...nuevoTema } : t
+      // PUT para actualizar un tema existente
+      await axios.put(
+        `https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/temas/${temaSeleccionado._id}`,
+        nuevoTema
       );
-      setTemas(nuevosTemas);
     } else {
-      const temaConId = {
-        _id: Date.now().toString(),
-        ...nuevoTema
-      };
-      setTemas([...temas, temaConId]);
+      // POST para crear un nuevo tema
+      await axios.post(
+        'https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/temas',
+        {
+          ...nuevoTema,
+          proyecto: '665ca5ef33e57e8b43f6b30e' // usa el ID de un proyecto válido
+        }
+      );
     }
 
+    await cargarTemas(); // vuelve a traer desde Mongo
     cerrarModalTema();
     setTemaSeleccionado(null);
-  };
+  } catch (error) {
+    console.error('❌ Error al guardar tema:', error);
+  }
+};
 
   return (
     <div className="layout-container">
