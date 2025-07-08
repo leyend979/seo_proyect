@@ -92,7 +92,7 @@ const TemaForm = ({ onSubmit, tema, onClose, proyectoActual }) => {
           </div>
         ))}
           <button type="button" onClick={handleAddSubtema}>+ Agregar Subtema</button>
-          <button type="button" onClick={() => handleRemoveSubtitulo(idx)}>🗑</button>
+          <button type="button" onClick={() => handleRemoveSubtema(idx)}>🗑</button>
 
           <div className="buttons">
             <button type="submit">{tema ? 'Actualizar' : 'Crear'}</button>

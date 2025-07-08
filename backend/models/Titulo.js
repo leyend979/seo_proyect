@@ -11,7 +11,7 @@ const SubtituloSchema = new mongoose.Schema({
 });
 
 const TituloSchema = new mongoose.Schema({
-  nombre: { type: String, required: true, unique: true },
+  nombre: { type: String, required: true},
   descripcion: String,
   subtitulos: [SubtituloSchema]
 });

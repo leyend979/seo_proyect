@@ -12,17 +12,15 @@ const router = express.Router();
  */
 router.get('/', async (req, res) => {
   try {
-    const { proyectoId } = req.query;
-    const temas = proyectoId
-      ? await Tema.find({ proyectoId })  // filtra por proyecto si lo hay
-      : await Tema.find();              // si no, devuelve todos (fallback)
+    const { proyecto } = req.query;
+    const temas = proyecto
+      ? await Tema.find({ proyecto })
+      : await Tema.find();
     res.json(temas);
   } catch (err) {
     res.status(500).json({ error: 'Error al obtener temas' });
   }
 });
-
-
 // Ruta para obtener un tema individual por ID
 router.get('/:id', async (req, res) => {
   try {
@@ -81,16 +79,18 @@ router.put('/:id', async (req, res) => {
  * DELETE /api/temas/:id
  * Eliminar un tema por su ID
  */
+// Eliminar un tema por ID
 router.delete('/:id', async (req, res) => {
+  console.log('🧪 Recibido DELETE con ID:', req.params.id);
   try {
     const temaEliminado = await Tema.findByIdAndDelete(req.params.id);
     if (!temaEliminado) {
-      return res.status(404).json({ error: "Tema no encontrado" });
+      return res.status(404).json({ error: 'Tema no encontrado' });
     }
-    res.json({ mensaje: "Tema eliminado exitosamente", tema: temaEliminado });
-  } catch (error) {
-    console.error("Error al eliminar tema:", error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    res.json({ message: 'Tema eliminado correctamente' });
+  } catch (err) {
+    console.error('❌ Error al eliminar tema:', err);
+    res.status(500).json({ error: 'Error al eliminar tema' });
   }
 });
 
