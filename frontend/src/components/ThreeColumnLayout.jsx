@@ -13,22 +13,23 @@ const ThreeColumnLayout = ({ proyectoActual }) => {
   const [coleccionEditar, setColeccionEditar] = useState(null);
   const [coleccionExpandida, setColeccionExpandida] = useState(null);
 
- useEffect(() => {
-  if (!proyectoActual?._id) return;  // ⚠️ espera a que el proyecto esté cargado
+const cargarTemas = async () => {
+  if (!proyectoActual?._id) return;
 
-  const cargarTemas = async () => {
-    try {
-      const res = await axios.get(
-        `https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/temas?proyecto=${proyectoActual._id}`
-      );
-      setTemas(res.data);
-    } catch (err) {
-      console.error('Error al cargar temas:', err);
-    }
-  };
+  try {
+    const res = await axios.get(
+      `https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/temas?proyecto=${proyectoActual._id}`
+    );
+    setTemas(res.data);
+  } catch (err) {
+    console.error('Error al cargar temas:', err);
+  }
+};
 
-  cargarTemas();
+useEffect(() => {
+  cargarTemas(); // ya disponible aquí
 }, [proyectoActual?._id]);
+
 
 
   const seleccionarTema = (tema) => {
