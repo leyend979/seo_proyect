@@ -55,31 +55,40 @@ useEffect(() => {
     setMostrarModalTema(false);
   };
 
-  const actualizarColeccion = (nuevaColeccion) => {
-    const nuevosTemas = [...temas];
-    const temaIdx = nuevosTemas.findIndex(t => t._id === temaSeleccionado?._id);
-    if (temaIdx === -1) return;
+const actualizarColeccion = (nuevaColeccion) => {
+  const nuevosTemas = [...temas];
+  const temaIdx = nuevosTemas.findIndex(t => t._id === temaSeleccionado?._id);
+  if (temaIdx === -1) return;
 
-    const subtemaIdx = nuevosTemas[temaIdx].subtemas?.findIndex(s => s._id === subtemaSeleccionado?._id);
-    if (subtemaIdx === -1 || subtemaIdx === undefined) return;
+  const subtemaIdx = nuevosTemas[temaIdx].subtemas?.findIndex(s => s._id === subtemaSeleccionado?._id);
+  if (subtemaIdx === -1 || subtemaIdx === undefined) return;
 
-    if (!Array.isArray(nuevosTemas[temaIdx].subtemas[subtemaIdx].colecciones)) {
-      nuevosTemas[temaIdx].subtemas[subtemaIdx].colecciones = [];
-    }
+  const subtema = nuevosTemas[temaIdx].subtemas[subtemaIdx];
 
-    if (coleccionEditar) {
-      const colecciones = nuevosTemas[temaIdx].subtemas[subtemaIdx].colecciones;
-      const idx = colecciones.findIndex(c => c._id === coleccionEditar._id);
-      if (idx !== -1) {
-        colecciones[idx] = { ...coleccionEditar, ...nuevaColeccion };
-      }
-    } else {
-      nuevosTemas[temaIdx].subtemas[subtemaIdx].colecciones.push(nuevaColeccion);
-    }
+  // Asegurar que colecciones es un array
+  if (!Array.isArray(subtema.colecciones)) {
+    subtema.colecciones = [];
+  }
 
-    setTemas(nuevosTemas);
-    cerrarModalColeccion();
+  // Asignar un _id si no viene con uno
+  const nuevaConId = {
+    _id: nuevaColeccion._id || crypto.randomUUID(),
+    ...nuevaColeccion
   };
+
+  if (coleccionEditar) {
+    const idx = subtema.colecciones.findIndex(c => c._id === coleccionEditar._id);
+    if (idx !== -1) {
+      subtema.colecciones[idx] = { ...coleccionEditar, ...nuevaConId };
+    }
+  } else {
+    subtema.colecciones.push(nuevaConId);
+  }
+
+  setTemas(nuevosTemas);
+  cerrarModalColeccion();
+};
+
 
   const eliminarColeccion = (coleccionId) => {
     const nuevosTemas = [...temas];
