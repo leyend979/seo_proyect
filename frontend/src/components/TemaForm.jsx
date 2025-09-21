@@ -9,13 +9,22 @@ const TemaForm = ({ onSubmit, tema, onClose, proyectoActual }) => {
   const [subtemas, setSubtemas] = useState([]);
 
   useEffect(() => {
-    console.log("Tema recibido:", tema);
-    if (tema) {
-      setNombre(tema.nombre || '');
-      setDescripcion(tema.descripcion || '');
-      setSubtemas(tema.subtemas || []);
-    }
-  }, [tema]);
+  console.log("Tema recibido:", tema);
+
+  if (tema && tema._id) {
+    // Modo edición → rellena con datos existentes
+    setNombre(tema.nombre || '');
+    setDescripcion(tema.descripcion || '');
+    setSubtemas(tema.subtemas || []);
+  } else {
+    // Modo creación → limpia los campos
+    setNombre('');
+    setDescripcion('');
+    setSubtemas([]);
+  }
+}, [tema]);
+
+
 
   const handleAddSubtema = () => {
     setSubtemas([...subtemas, { nombre: '' }]);
@@ -35,25 +44,33 @@ const TemaForm = ({ onSubmit, tema, onClose, proyectoActual }) => {
 
 
 
-  const handleSubmit = (e) => {
+const handleSubmit = (e) => {
   e.preventDefault();
 
-  // ⚠️ Limpia campos no necesarios que causan errores
-  const subtemasLimpios = subtemas.map(({ nombre, colecciones = [] }) => ({
-    nombre,
-    colecciones: colecciones.map(({ nombre, contenido }) => ({
-      nombre,
-      contenido
+  // Preserva _id de subtemas y colecciones si existen
+  const subtemasLimpios = (subtemas || []).map(st => ({
+    _id: st._id,                  // <-- conserva id si viene de Mongo
+    nombre: st.nombre,
+    colecciones: (st.colecciones || []).map(col => ({
+      _id: col._id,               // <-- conserva id de la colección
+      nombre: col.nombre,
+      contenido: col.contenido
     }))
   }));
 
-  onSubmit({
+  const payload = {
+    _id: tema?._id,                              // <-- CLAVE: enviar _id si estás editando
     nombre,
     descripcion,
     subtemas: subtemasLimpios,
-    proyecto: proyectoActual._id
-  });
+    // si estás creando usa el proyectoActual; si editas, conserva el del tema
+    proyecto: tema?._id ? (tema.proyecto || proyectoActual?._id) : proyectoActual?._id
+  };
+
+  // console.log('payload TemaForm =>', payload); // útil para depurar
+  onSubmit(payload);
 };
+
 
 
 

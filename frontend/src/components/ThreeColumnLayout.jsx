@@ -103,6 +103,7 @@ const actualizarColeccion = (nuevaColeccion) => {
 
   const abrirFormularioTema = () => {
     setMostrarModalTema(true);
+    setTemaSeleccionado(null); // 🔹 Limpia tema seleccionado
   };
 
  const eliminarTema = async (id) => {
@@ -122,30 +123,43 @@ const actualizarColeccion = (nuevaColeccion) => {
 
 const guardarNuevoTema = async (nuevoTema) => {
   try {
-    if (temaSeleccionado) {
-      // PUT para actualizar un tema existente
-      await axios.put(
-        `https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/temas/${temaSeleccionado._id}`,
-        nuevoTema
+    if (nuevoTema._id && nuevoTema._id.length === 24) {
+      // 🔹 EDITAR TEMA (PUT) → solo si el id es ObjectId válido
+      const { _id, ...resto } = nuevoTema;
+
+      const { data } = await axios.put(
+        `https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/temas/${_id}`,
+        { ...resto, proyecto: proyectoActual._id }
       );
+
+      setTemas(prev => prev.map(t => t._id === _id ? data : t));
+
     } else {
-      // POST para crear un nuevo tema
-      await axios.post(
-        'https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/temas',
-        {
-          ...nuevoTema,
-          proyecto: '665ca5ef33e57e8b43f6b30e' // usa el ID de un proyecto válido
-        }
+      // 🔹 CREAR TEMA (POST)
+      // quitamos cualquier id temporal
+      const { _id, ...resto } = nuevoTema;
+
+      const { data } = await axios.post(
+        `https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/temas`,
+        { ...resto, proyecto: proyectoActual._id }
       );
+
+      // sustituimos el temporal (si existía) por el real que devuelve Mongo
+      setTemas(prev => [
+        ...prev.filter(t => t._id !== _id),
+        data
+      ]);
     }
 
-    await cargarTemas(); // vuelve a traer desde Mongo
     cerrarModalTema();
-    setTemaSeleccionado(null);
   } catch (error) {
-    console.error('❌ Error al guardar tema:', error);
+    console.error("❌ Error al guardar tema:", error);
   }
 };
+
+
+
+
 
   return (
     <div className="layout-container">
@@ -164,7 +178,7 @@ const guardarNuevoTema = async (nuevoTema) => {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    setTemaSeleccionado(tema);
+                    setTemaSeleccionado(tema); 
                     setMostrarModalTema(true);
                   }}
                   title="Editar"
@@ -210,7 +224,9 @@ const guardarNuevoTema = async (nuevoTema) => {
         </div>
 
         {subtemaSeleccionado?.colecciones?.map((coleccion) => {
+          
           let secciones = [];
+          console.log("📂 Colecciones de subtema:", subtemaSeleccionado?.colecciones);
 
           try {
             secciones = JSON.parse(coleccion.contenido);
