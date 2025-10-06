@@ -55,101 +55,121 @@ useEffect(() => {
     setMostrarModalTema(false);
   };
 
-const actualizarColeccion = (nuevaColeccion) => {
-  const nuevosTemas = [...temas];
-  const temaIdx = nuevosTemas.findIndex(t => t._id === temaSeleccionado?._id);
-  if (temaIdx === -1) return;
+//actualizar coleccion
 
-  const subtemaIdx = nuevosTemas[temaIdx].subtemas?.findIndex(s => s._id === subtemaSeleccionado?._id);
-  if (subtemaIdx === -1 || subtemaIdx === undefined) return;
 
-  const subtema = nuevosTemas[temaIdx].subtemas[subtemaIdx];
 
-  // Asegurar que colecciones es un array
-  if (!Array.isArray(subtema.colecciones)) {
-    subtema.colecciones = [];
-  }
+const actualizarColeccion = async (nuevaColeccion) => {
+  if (!temaSeleccionado?._id || !subtemaSeleccionado?._id) return;
 
-  // Asignar un _id si no viene con uno
-  const nuevaConId = {
-    _id: nuevaColeccion._id || crypto.randomUUID(),
-    ...nuevaColeccion
-  };
+  try {
+    let res;
 
-  if (coleccionEditar) {
-    const idx = subtema.colecciones.findIndex(c => c._id === coleccionEditar._id);
-    if (idx !== -1) {
-      subtema.colecciones[idx] = { ...coleccionEditar, ...nuevaConId };
+    if (coleccionEditar?._id) {
+      // 🔹 Editar colección existente
+      res = await axios.put(
+        `https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/temas/${temaSeleccionado._id}/subtemas/${subtemaSeleccionado._id}/colecciones/${coleccionEditar._id}`,
+        nuevaColeccion
+      );
+    } else {
+      // 🔹 Crear nueva colección
+      res = await axios.post(
+        `https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/temas/${temaSeleccionado._id}/subtemas/${subtemaSeleccionado._id}/colecciones`,
+        nuevaColeccion
+      );
     }
-  } else {
-    subtema.colecciones.push(nuevaConId);
-  }
 
-  setTemas(nuevosTemas);
-  cerrarModalColeccion();
+    const temaActualizado = res.data;
+
+    // 🔹 Reemplazar el tema actualizado en el estado global
+    setTemas(prev =>
+      prev.map(t => t._id === temaActualizado._id ? temaActualizado : t)
+    );
+    setTemaSeleccionado(temaActualizado);
+
+    cerrarModalColeccion();
+  } catch (error) {
+    console.error("❌ Error al guardar colección:", error);
+    alert("No se pudo guardar la colección.");
+  }
 };
 
 
-  const eliminarColeccion = (coleccionId) => {
-    const nuevosTemas = [...temas];
-    const temaIdx = nuevosTemas.findIndex(t => t._id === temaSeleccionado._id);
-    const subtemaIdx = nuevosTemas[temaIdx].subtemas.findIndex(s => s._id === subtemaSeleccionado._id);
+// Eliminar una colección
+const eliminarColeccion = async (coleccionId) => {
+  if (!temaSeleccionado?._id || !subtemaSeleccionado?._id) return;
+  const confirmar = window.confirm('¿Seguro que quieres eliminar esta colección?');
+  if (!confirmar) return;
 
-    nuevosTemas[temaIdx].subtemas[subtemaIdx].colecciones =
-      nuevosTemas[temaIdx].subtemas[subtemaIdx].colecciones.filter(c => c._id !== coleccionId);
+  try {
+    const res = await axios.delete(
+            `https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/temas/${temaSeleccionado._id}/subtemas/${subtemaSeleccionado._id}/colecciones/${coleccionId}`
+    );
 
-    setTemas(nuevosTemas);
-  };
+    const temaActualizado = res.data;
+
+    // 🔹 Reemplazar el tema actualizado en el estado global
+    setTemas(prev =>
+      prev.map(t => t._id === temaActualizado._id ? temaActualizado : t)
+    );
+    setTemaSeleccionado(temaActualizado);
+  } catch (error) {
+    console.error("❌ Error al eliminar colección:", error);
+    alert("No se pudo eliminar la colección.");
+  }
+};
+
+
+
+
 
   const abrirFormularioTema = () => {
     setMostrarModalTema(true);
     setTemaSeleccionado(null); // 🔹 Limpia tema seleccionado
   };
 
- const eliminarTema = async (id) => {
-  const confirmar = window.confirm('¿Estás seguro de que quieres eliminar este tema?');
-  if (!confirmar) return;
 
+const eliminarTema = async (id) => {
   try {
     await axios.delete(`https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/temas/${id}`);
-    alert('✅ Tema eliminado correctamente');
-    await cargarTemas(); // Recargar la lista
+    setTemas(prev => prev.filter(t => t._id !== id));
+    if (temaSeleccionado?._id === id) {
+      setTemaSeleccionado(null);
+    }
   } catch (error) {
-    console.error('❌ Error al eliminar tema:', error);
-    alert('❌ Hubo un error al eliminar el tema');
+    console.error("❌ Error al eliminar tema:", error);
   }
 };
 
 
+
 const guardarNuevoTema = async (nuevoTema) => {
   try {
+    let data;
     if (nuevoTema._id && nuevoTema._id.length === 24) {
-      // 🔹 EDITAR TEMA (PUT) → solo si el id es ObjectId válido
+      // EDITAR
       const { _id, ...resto } = nuevoTema;
-
-      const { data } = await axios.put(
+      const res = await axios.put(
         `https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/temas/${_id}`,
         { ...resto, proyecto: proyectoActual._id }
       );
+      data = res.data;
 
       setTemas(prev => prev.map(t => t._id === _id ? data : t));
-
     } else {
-      // 🔹 CREAR TEMA (POST)
-      // quitamos cualquier id temporal
+      // CREAR
       const { _id, ...resto } = nuevoTema;
-
-      const { data } = await axios.post(
+      const res = await axios.post(
         `https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/temas`,
         { ...resto, proyecto: proyectoActual._id }
       );
+      data = res.data;
 
-      // sustituimos el temporal (si existía) por el real que devuelve Mongo
-      setTemas(prev => [
-        ...prev.filter(t => t._id !== _id),
-        data
-      ]);
+      setTemas(prev => [...prev, data]);
     }
+
+    // 🔹 IMPORTANTE: refrescar también el tema seleccionado
+    setTemaSeleccionado(data);
 
     cerrarModalTema();
   } catch (error) {
@@ -157,6 +177,10 @@ const guardarNuevoTema = async (nuevoTema) => {
   }
 };
 
+
+
+// `https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/temas/${_id}`,
+// `https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/temas`,
 
 
 
