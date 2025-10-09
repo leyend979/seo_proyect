@@ -66,13 +66,11 @@ const actualizarColeccion = async (nuevaColeccion) => {
     let res;
 
     if (coleccionEditar?._id) {
-      // 🔹 Editar colección existente
       res = await axios.put(
         `https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/temas/${temaSeleccionado._id}/subtemas/${subtemaSeleccionado._id}/colecciones/${coleccionEditar._id}`,
         nuevaColeccion
       );
     } else {
-      // 🔹 Crear nueva colección
       res = await axios.post(
         `https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/temas/${temaSeleccionado._id}/subtemas/${subtemaSeleccionado._id}/colecciones`,
         nuevaColeccion
@@ -81,11 +79,17 @@ const actualizarColeccion = async (nuevaColeccion) => {
 
     const temaActualizado = res.data;
 
-    // 🔹 Reemplazar el tema actualizado en el estado global
+    // Reemplazar el tema actualizado
     setTemas(prev =>
       prev.map(t => t._id === temaActualizado._id ? temaActualizado : t)
     );
     setTemaSeleccionado(temaActualizado);
+
+    // 🔹 Actualizar también el subtema seleccionado
+    const subtemaActualizado = temaActualizado.subtemas.find(
+      s => s._id === subtemaSeleccionado._id
+    );
+    setSubtemaSeleccionado(subtemaActualizado);
 
     cerrarModalColeccion();
   } catch (error) {
@@ -93,6 +97,7 @@ const actualizarColeccion = async (nuevaColeccion) => {
     alert("No se pudo guardar la colección.");
   }
 };
+
 
 
 // Eliminar una colección
@@ -103,21 +108,27 @@ const eliminarColeccion = async (coleccionId) => {
 
   try {
     const res = await axios.delete(
-            `https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/temas/${temaSeleccionado._id}/subtemas/${subtemaSeleccionado._id}/colecciones/${coleccionId}`
+      `https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/temas/${temaSeleccionado._id}/subtemas/${subtemaSeleccionado._id}/colecciones/${coleccionId}`
     );
 
     const temaActualizado = res.data;
 
-    // 🔹 Reemplazar el tema actualizado en el estado global
     setTemas(prev =>
       prev.map(t => t._id === temaActualizado._id ? temaActualizado : t)
     );
     setTemaSeleccionado(temaActualizado);
+
+    // 🔹 Refrescar el subtema seleccionado
+    const subtemaActualizado = temaActualizado.subtemas.find(
+      s => s._id === subtemaSeleccionado._id
+    );
+    setSubtemaSeleccionado(subtemaActualizado);
   } catch (error) {
     console.error("❌ Error al eliminar colección:", error);
     alert("No se pudo eliminar la colección.");
   }
 };
+
 
 
 
