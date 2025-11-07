@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { data, useNavigate } from 'react-router-dom';
+const API_BASE = import.meta.env.VITE_BACK_URL
+;
+
 
 const Navbar = ({ proyectoActual, setProyectoActual }) => {
   const [proyectos, setProyectos] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get('https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/proyectos')
+    axios.get(API_BASE+'/api/proyectos')
       .then(res => setProyectos(res.data))
       .catch(err => {
         console.error('Error al cargar proyectos', err);
@@ -30,7 +33,7 @@ const Navbar = ({ proyectoActual, setProyectoActual }) => {
 
     try {
       
-      const res = await axios.post('https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/proyectos', {
+      const res = await axios.post(API_BASE+'api/proyectos', {
         nombre: nombre.trim()
       });
       setProyectos([...proyectos, res.data]);

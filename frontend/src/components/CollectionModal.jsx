@@ -19,19 +19,15 @@ const CollectionModal = ({ onSubmit, initialData = null, onClose }) => {
   const [secciones, setSecciones] = useState([{ tituloSecundario: '', contenido: '' }]);
   const [sheetUrl, setSheetUrl] = useState('');
   const [sheetName, setSheetName] = useState('');
-
   const modalRef = useRef(null);
 
   useEffect(() => {
     if (initialData) {
       setNombre(initialData.nombre);
       setImagenUrl(initialData.imagenUrl || '');
-
       try {
         const parsed = JSON.parse(initialData.contenido);
-        setSecciones(Array.isArray(parsed)
-          ? parsed
-          : [{ tituloSecundario: '', contenido: parsed }]);
+        setSecciones(Array.isArray(parsed) ? parsed : [{ tituloSecundario: '', contenido: parsed }]);
       } catch {
         setSecciones([{ tituloSecundario: '', contenido: '' }]);
       }
@@ -51,7 +47,7 @@ const CollectionModal = ({ onSubmit, initialData = null, onClose }) => {
     const nuevaColeccion = {
       nombre,
       contenido: JSON.stringify(secciones),
-      imagenUrl
+      imagenUrl,
     };
 
     try {
@@ -87,11 +83,12 @@ const CollectionModal = ({ onSubmit, initialData = null, onClose }) => {
     if (!sheetId) return alert('URL inválida');
 
     const embedUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:html&sheet=${encodeURIComponent(sheetName)}`;
+
     const iframeHTML = `<iframe src="${embedUrl}" width="100%" height="500" frameborder="0"></iframe>`;
 
     const nuevaSeccion = {
       tituloSecundario: 'Datos desde Google Sheets',
-      contenido: iframeHTML
+      contenido: iframeHTML,
     };
 
     setSecciones([nuevaSeccion]);
@@ -101,6 +98,7 @@ const CollectionModal = ({ onSubmit, initialData = null, onClose }) => {
     <Modal isOpen={true} onClose={onClose}>
       <div ref={modalRef} style={{ maxHeight: '80vh', overflowY: 'auto', padding: '1rem' }}>
         <h3>{initialData ? 'Editar Colección' : 'Agregar Nueva Colección'}</h3>
+
         <form onSubmit={handleFormSubmit}>
           <div style={{ marginBottom: '1rem' }}>
             <label>Título Global:</label><br />
@@ -116,6 +114,7 @@ const CollectionModal = ({ onSubmit, initialData = null, onClose }) => {
           {/* Google Sheets */}
           <div style={{ marginBottom: '1rem', border: '1px dashed #ccc', padding: '1rem' }}>
             <h4>Cargar desde Google Sheets</h4>
+
             <input
               type="text"
               value={sheetUrl}
@@ -123,6 +122,7 @@ const CollectionModal = ({ onSubmit, initialData = null, onClose }) => {
               placeholder="https://docs.google.com/spreadsheets/d/..."
               style={{ width: '100%', marginBottom: '0.5rem' }}
             />
+
             <input
               type="text"
               value={sheetName}
@@ -130,7 +130,12 @@ const CollectionModal = ({ onSubmit, initialData = null, onClose }) => {
               placeholder="NombreHoja"
               style={{ width: '100%', marginBottom: '0.5rem' }}
             />
-            <button type="button" onClick={handleLoadFromSheet} style={{ padding: '0.5rem', backgroundColor: '#28a745', color: 'white' }}>
+
+            <button
+              type="button"
+              onClick={handleLoadFromSheet}
+              style={{ padding: '0.5rem', backgroundColor: '#28a745', color: 'white' }}
+            >
               Cargar Tabla
             </button>
           </div>
@@ -144,11 +149,13 @@ const CollectionModal = ({ onSubmit, initialData = null, onClose }) => {
                 onChange={(e) => handleChangeSeccion(index, 'tituloSecundario', e.target.value)}
                 style={{ width: '100%', marginBottom: '0.5rem' }}
               />
+
               <ReactQuill
                 value={sec.contenido}
                 onChange={(value) => handleChangeSeccion(index, 'contenido', value)}
                 modules={{ toolbar: toolbarOptions }}
               />
+
               {secciones.length > 1 && (
                 <button
                   type="button"
@@ -161,17 +168,23 @@ const CollectionModal = ({ onSubmit, initialData = null, onClose }) => {
             </div>
           ))}
 
-          <button type="button" onClick={handleAddSeccion} style={{ marginTop: '1rem', backgroundColor: '#007bff', color: 'white' }}>
+          <button
+            type="button"
+            onClick={handleAddSeccion}
+            style={{ marginTop: '1rem', backgroundColor: '#007bff', color: 'white' }}
+          >
             + Agregar Sección Manual
           </button>
 
           <ImageUpload onUpload={setImagenUrl} />
+
           {imagenUrl && <img src={imagenUrl} alt="Vista previa" style={{ maxWidth: '100%', marginTop: '1rem' }} />}
 
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem' }}>
             <button type="button" onClick={onClose} style={{ backgroundColor: 'red', color: 'white' }}>
               Cancelar
             </button>
+
             <button type="submit" style={{ backgroundColor: 'green', color: 'white' }}>
               Guardar Colección
             </button>
@@ -183,6 +196,7 @@ const CollectionModal = ({ onSubmit, initialData = null, onClose }) => {
 };
 
 export default CollectionModal;
+
 
 
 

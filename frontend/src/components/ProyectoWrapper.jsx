@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import ThreeColumnLayout from './ThreeColumnLayout';
+const API_BASE = import.meta.env.VITE_BACK_URL;
 
 const ProyectoWrapper = ({ setProyectoActual }) => {
   const { proyectoId } = useParams();
@@ -12,7 +13,7 @@ const ProyectoWrapper = ({ setProyectoActual }) => {
   useEffect(() => {
     if (!proyectoId) return;
 
-    axios.get(`https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/proyectos/${proyectoId}`)
+    axios.get(`${API_BASE}/api/proyectos/${proyectoId}`)
       .then(res => {
         setProyecto(res.data);
         setProyectoActual(res.data);

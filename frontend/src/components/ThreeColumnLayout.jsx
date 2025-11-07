@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import CollectionModal from './CollectionModal';
+import DOMPurify from "dompurify";
 import TemaForm from './TemaForm';
 import "../../src/index.css";
+const API_BASE = import.meta.env.VITE_BACK_URL;
+
+
 
 const ThreeColumnLayout = ({ proyectoActual }) => {
   const [temas, setTemas] = useState([]);
@@ -13,21 +17,26 @@ const ThreeColumnLayout = ({ proyectoActual }) => {
   const [coleccionEditar, setColeccionEditar] = useState(null);
   const [coleccionExpandida, setColeccionExpandida] = useState(null);
 
-const cargarTemas = async () => {
-  if (!proyectoActual?._id) return;
-
-  try {
-    const res = await axios.get(
-      `https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/temas?proyecto=${proyectoActual._id}`
-    );
-    setTemas(res.data);
-  } catch (err) {
-    console.error('Error al cargar temas:', err);
-  }
-};
-
-useEffect(() => {
-  cargarTemas(); // ya disponible aquí
+  useEffect(() => {
+  console.log("🎯 Proyecto actual recibido en ThreeColumnLayout:", proyectoActual);
+}, [proyectoActual]);
+  
+  const cargarTemas = async () => {
+    if (!proyectoActual?._id) return;
+    console.log(proyectoActual)
+    
+    try {
+      const res = await axios.get(
+        `${API_BASE}/api/temas?proyecto=${proyectoActual._id}`
+      );
+      setTemas(res.data);
+    } catch (err) {
+      console.error('Error al cargar temas:', err);
+    }
+  };
+  
+  useEffect(() => {
+    cargarTemas(); // ya disponible aquí
 }, [proyectoActual?._id]);
 
 
@@ -57,8 +66,6 @@ useEffect(() => {
 
 //actualizar coleccion
 
-
-
 const actualizarColeccion = async (nuevaColeccion) => {
   if (!temaSeleccionado?._id || !subtemaSeleccionado?._id) return;
 
@@ -67,12 +74,12 @@ const actualizarColeccion = async (nuevaColeccion) => {
 
     if (coleccionEditar?._id) {
       res = await axios.put(
-        `https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/temas/${temaSeleccionado._id}/subtemas/${subtemaSeleccionado._id}/colecciones/${coleccionEditar._id}`,
+        `${API_BASE}/api/temas/${temaSeleccionado._id}/subtemas/${subtemaSeleccionado._id}/colecciones/${coleccionEditar._id}`,
         nuevaColeccion
       );
     } else {
       res = await axios.post(
-        `https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/temas/${temaSeleccionado._id}/subtemas/${subtemaSeleccionado._id}/colecciones`,
+        `${API_BASE}/api/temas/${temaSeleccionado._id}/subtemas/${subtemaSeleccionado._id}/colecciones`,
         nuevaColeccion
       );
     }
@@ -100,6 +107,9 @@ const actualizarColeccion = async (nuevaColeccion) => {
 
 
 
+
+
+
 // Eliminar una colección
 const eliminarColeccion = async (coleccionId) => {
   if (!temaSeleccionado?._id || !subtemaSeleccionado?._id) return;
@@ -108,8 +118,9 @@ const eliminarColeccion = async (coleccionId) => {
 
   try {
     const res = await axios.delete(
-      `https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/temas/${temaSeleccionado._id}/subtemas/${subtemaSeleccionado._id}/colecciones/${coleccionId}`
+      `${API_BASE}/api/temas/${temaSeleccionado._id}/subtemas/${subtemaSeleccionado._id}/colecciones/${coleccionId}`
     );
+
 
     const temaActualizado = res.data;
 
@@ -142,7 +153,7 @@ const eliminarColeccion = async (coleccionId) => {
 
 const eliminarTema = async (id) => {
   try {
-    await axios.delete(`https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/temas/${id}`);
+    await axios.delete(`${API_BASE}/api/temas/${id}`);
     setTemas(prev => prev.filter(t => t._id !== id));
     if (temaSeleccionado?._id === id) {
       setTemaSeleccionado(null);
@@ -161,7 +172,7 @@ const guardarNuevoTema = async (nuevoTema) => {
       // EDITAR
       const { _id, ...resto } = nuevoTema;
       const res = await axios.put(
-        `https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/temas/${_id}`,
+        `${API_BASE}/api/temas/${_id}`,
         { ...resto, proyecto: proyectoActual._id }
       );
       data = res.data;
@@ -171,7 +182,7 @@ const guardarNuevoTema = async (nuevoTema) => {
       // CREAR
       const { _id, ...resto } = nuevoTema;
       const res = await axios.post(
-        `https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/temas`,
+        `${API_BASE}/api/temas`,
         { ...resto, proyecto: proyectoActual._id }
       );
       data = res.data;
@@ -296,21 +307,34 @@ const guardarNuevoTema = async (nuevoTema) => {
               {estaExpandida && (
                 <div className="card-content" style={{ padding: '1rem' }}>
                   {secciones.map((sec, idx) => (
-                    <div key={idx} className="coleccion-seccion" style={{ marginBottom: '1rem' }}>
-                      <h4 style={{
-                        fontSize: '1.25rem',
-                        fontWeight: '600',
-                        marginBottom: '0.5rem',
-                        marginTop: '0.5rem'
-                      }}>
+                  <div key={idx} className="coleccion-seccion" style={{ marginBottom: '1.5rem' }}>
+                    {sec.tituloSecundario && (
+                      <h4
+                        style={{
+                          fontSize: '1.25rem',
+                          fontWeight: '600',
+                          marginBottom: '0.75rem',
+                          marginTop: '0.5rem',
+                          borderBottom: '1px solid #ddd',
+                          paddingBottom: '0.25rem'
+                        }}
+                      >
                         {sec.tituloSecundario}
                       </h4>
-                      <div
-                        className="card-content"
-                        dangerouslySetInnerHTML={{ __html: sec.contenido }}
-                      />
-                    </div>
-                  ))}
+                    )}
+
+                    <div
+                      className="ql-editor"
+                      dangerouslySetInnerHTML={{ __html: sec.contenido }}
+                      style={{
+                        fontSize: '1rem',
+                        lineHeight: '1.7',
+                        marginLeft: '0.25rem',
+                      }}
+                    />
+                  </div>
+                ))}
+
                   <div className="buttons" style={{ display: 'flex', gap: '1rem' }}>
                     <button onClick={() => abrirModalColeccion(coleccion)}>Editar</button>
                     <button onClick={() => eliminarColeccion(coleccion._id)}>Eliminar</button>

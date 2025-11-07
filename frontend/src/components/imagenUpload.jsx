@@ -2,39 +2,34 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
+const API_BASE = import.meta.env.VITE_BACK_URL;
+
 const ImageUpload = ({ onUpload }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [imageUrl, setImageUrl] = useState('');
 
-  // Maneja el cambio en el input file
   const handleFileChange = (e) => {
     setSelectedFile(e.target.files[0]);
   };
 
-  // Función para subir la imagen al endpoint /api/upload
   const handleUpload = async () => {
     if (!selectedFile) return;
-    setUploading(true);
+
     const formData = new FormData();
-    formData.append('image', selectedFile);
+    formData.append("image", selectedFile); // 👈 se usa el archivo del estado
 
     try {
-      // Cambia 'https://tu-backend-url' por la URL real de tu backend
-      const response = await axios.post(
-        'https://tu-backend-url/api/upload',
-        formData,
-        {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        }
-      );
-      // Suponemos que el endpoint devuelve { imageUrl: "https://..." }
-      const url = response.data.imageUrl;
-      setImageUrl(url);
-      // Notificamos al componente padre con la URL obtenida
-      onUpload(url);
+      setUploading(true);
+      const res = await axios.post(`${API_BASE}/api/upload`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      console.log("✅ Imagen subida:", res.data);
+      setImageUrl(res.data.imageUrl);
+      if (onUpload) onUpload(res.data.imageUrl);
     } catch (error) {
-      console.error('Error al subir la imagen:', error);
+      console.error("❌ Error al subir la imagen:", error);
     } finally {
       setUploading(false);
     }
@@ -42,9 +37,9 @@ const ImageUpload = ({ onUpload }) => {
 
   return (
     <div style={{ marginTop: '1rem' }}>
-      <input type="file" onChange={handleFileChange} />
-      <button 
-        onClick={handleUpload} 
+      <input type="file" accept="image/*" onChange={handleFileChange} />
+      <button
+        onClick={handleUpload}
         disabled={uploading || !selectedFile}
         style={{ marginLeft: '0.5rem', padding: '0.5rem 1rem' }}
       >
@@ -55,7 +50,7 @@ const ImageUpload = ({ onUpload }) => {
           <img
             src={imageUrl}
             alt="Vista previa"
-            style={{ maxWidth: '100%', height: 'auto', border: '1px solid #ccc' }}
+            style={{ maxWidth: '100%', border: '1px solid #ccc' }}
           />
         </div>
       )}
@@ -64,3 +59,4 @@ const ImageUpload = ({ onUpload }) => {
 };
 
 export default ImageUpload;
+

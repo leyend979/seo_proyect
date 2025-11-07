@@ -1,3 +1,5 @@
+
+
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -465,17 +467,39 @@ strong, b {
   margin-left: 1rem;
   margin-right: 1rem;
 }
-.ql-editor {
-  font-size: 1rem;
-  line-height: 1.6;
-}
+/* === ESTILO UNIFICADO PARA TABLAS DE CONTENIDO PEGADO === */
 
+/* Asegura una buena indentación de listas */
 .ql-editor ol,
 .ql-editor ul {
-  padding-left: 1.5rem;
-  margin-bottom: 1rem;
+  margin-left: 2rem;
+  padding-left: 1.25rem;
 }
 
+/* Un poco de espacio entre los elementos de lista */
 .ql-editor li {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+/* Mejora la visibilidad de subniveles */
+.ql-editor ol li ol,
+.ql-editor ul li ul {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+  margin-left: 1.5rem;
+}
+
+.ql-editor ol {
+  margin-left: 1.5rem;
+  list-style-type: decimal;
+}
+
+.ql-editor ol ol {
+  list-style-type: lower-alpha;
+  margin-left: 2rem;
+}
+
+.ql-editor ol ol ol {
+  list-style-type: lower-roman;
+  margin-left: 2.5rem;
 }

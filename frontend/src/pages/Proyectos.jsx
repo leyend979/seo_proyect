@@ -2,13 +2,14 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+const API_BASE = import.meta.env.VITE_BACK_URL;
 
 const Proyectos = () => {
   const [proyectos, setProyectos] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get('https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/proyectos')
+    axios.get(API_BASE+'/api/proyectos')
       .then(res => setProyectos(res.data))
       .catch(err => console.error('Error al cargar proyectos', err));
   }, []);
@@ -17,7 +18,7 @@ const Proyectos = () => {
     const nombre = prompt('Nombre del nuevo proyecto:');
     if (!nombre) return;
     try {
-      const res = await axios.post('https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/proyectos', { nombre });
+      const res = await axios.post(API_BASE+'/api/proyectos', { nombre });
       setProyectos([...proyectos, res.data]);
     } catch (err) {
       console.error('Error al crear proyecto:', err);
