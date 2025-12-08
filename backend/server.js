@@ -8,6 +8,10 @@ const proyectoRoutes = require('./routes/proyectoRoutes');
 const coleccionesRoutes = require('./routes/coleccionesRoutes');
 const sheetsRoutes = require('./routes/sheetsRoutes');
 const uploadRoutes = require('./routes/routesUpload');
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+
+
+
 
 dotenv.config();
 connectDB();
@@ -48,6 +52,46 @@ app.use((err, req, res, next) => {
   console.error("❌ Error global:", err.message);
   res.status(500).json({ message: err.message });
 });
+
+// PROXY PARA IMÁGENES DE GOOGLE DRIVE
+// PROXY PARA IMÁGENES DE GOOGLE DRIVE
+// PROXY PARA IMÁGENES DE GOOGLE DRIVE
+// PROXY PARA IMÁGENES DE GOOGLE DRIVE
+app.get("/proxy", async (req, res) => {
+  console.log("📥 Proxy solicitado con ID:", req.query.id);
+  
+  try {
+    const id = req.query.id;
+    if (!id) return res.status(400).send("Missing ID");
+
+    const driveUrl = `https://drive.google.com/uc?export=download&id=${id}`;
+
+    const response = await fetch(driveUrl, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0",
+        "Accept": "image/avif,image/webp,*/*",
+        "Accept-Language": "es-ES,es;q=0.9",
+      }
+    });
+
+    if (!response.ok) {
+      console.error("❌ Error al descargar desde Drive:", response.status);
+      return res.status(500).send("Drive fetch failed");
+    }
+
+    res.setHeader("Content-Type", response.headers.get("content-type") || "application/octet-stream");
+    res.send(Buffer.from(await response.arrayBuffer()));
+
+  } catch (err) {
+    console.error("❌ Proxy error:", err);
+    res.status(500).send("Proxy error");
+  }
+});
+
+
+
+
+
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {

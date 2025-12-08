@@ -6,8 +6,6 @@ import TemaForm from './TemaForm';
 import "../../src/index.css";
 const API_BASE = import.meta.env.VITE_BACK_URL;
 
-
-
 const ThreeColumnLayout = ({ proyectoActual }) => {
   const [temas, setTemas] = useState([]);
   const [temaSeleccionado, setTemaSeleccionado] = useState(null);
@@ -18,12 +16,11 @@ const ThreeColumnLayout = ({ proyectoActual }) => {
   const [coleccionExpandida, setColeccionExpandida] = useState(null);
 
   useEffect(() => {
-  console.log("🎯 Proyecto actual recibido en ThreeColumnLayout:", proyectoActual);
-}, [proyectoActual]);
+    console.log("🎯 Proyecto actual recibido en ThreeColumnLayout:", proyectoActual);
+  }, [proyectoActual]);
   
   const cargarTemas = async () => {
     if (!proyectoActual?._id) return;
-    console.log(proyectoActual)
     
     try {
       const res = await axios.get(
@@ -36,10 +33,8 @@ const ThreeColumnLayout = ({ proyectoActual }) => {
   };
   
   useEffect(() => {
-    cargarTemas(); // ya disponible aquí
-}, [proyectoActual?._id]);
-
-
+    cargarTemas();
+  }, [proyectoActual?._id]);
 
   const seleccionarTema = (tema) => {
     setTemaSeleccionado(tema);
@@ -51,9 +46,13 @@ const ThreeColumnLayout = ({ proyectoActual }) => {
   };
 
   const abrirModalColeccion = (coleccion = null) => {
+  setMostrarModalColeccion(false); // primero cerramos temporalmente
+  setTimeout(() => {
     setColeccionEditar(coleccion);
-    setMostrarModalColeccion(true);
-  };
+    setMostrarModalColeccion(true); // abrimos con la nueva colección
+  }, 0);
+};
+
 
   const cerrarModalColeccion = () => {
     setMostrarModalColeccion(false);
@@ -64,151 +63,125 @@ const ThreeColumnLayout = ({ proyectoActual }) => {
     setMostrarModalTema(false);
   };
 
-//actualizar coleccion
+  const actualizarColeccion = async (nuevaColeccion) => {
+    if (!temaSeleccionado?._id || !subtemaSeleccionado?._id) return;
 
-const actualizarColeccion = async (nuevaColeccion) => {
-  if (!temaSeleccionado?._id || !subtemaSeleccionado?._id) return;
+    try {
+      let res;
 
-  try {
-    let res;
+      if (coleccionEditar?._id) {
+        res = await axios.put(
+          `${API_BASE}/api/temas/${temaSeleccionado._id}/subtemas/${subtemaSeleccionado._id}/colecciones/${coleccionEditar._id}`,
+          nuevaColeccion
+        );
+      } else {
+        res = await axios.post(
+          `${API_BASE}/api/temas/${temaSeleccionado._id}/subtemas/${subtemaSeleccionado._id}/colecciones`,
+          nuevaColeccion
+        );
+      }
 
-    if (coleccionEditar?._id) {
-      res = await axios.put(
-        `${API_BASE}/api/temas/${temaSeleccionado._id}/subtemas/${subtemaSeleccionado._id}/colecciones/${coleccionEditar._id}`,
-        nuevaColeccion
+      const temaActualizado = res.data;
+
+      setTemas(prev =>
+        prev.map(t => t._id === temaActualizado._id ? temaActualizado : t)
       );
-    } else {
-      res = await axios.post(
-        `${API_BASE}/api/temas/${temaSeleccionado._id}/subtemas/${subtemaSeleccionado._id}/colecciones`,
-        nuevaColeccion
+      setTemaSeleccionado(temaActualizado);
+
+      const subtemaActualizado = temaActualizado.subtemas.find(
+        s => s._id === subtemaSeleccionado._id
       );
+      setSubtemaSeleccionado(subtemaActualizado);
+
+      cerrarModalColeccion();
+    } catch (error) {
+      console.error("❌ Error al guardar colección:", error);
+      alert("No se pudo guardar la colección.");
     }
+  };
 
-    const temaActualizado = res.data;
+  const eliminarColeccion = async (coleccionId) => {
+    if (!temaSeleccionado?._id || !subtemaSeleccionado?._id) return;
 
-    // Reemplazar el tema actualizado
-    setTemas(prev =>
-      prev.map(t => t._id === temaActualizado._id ? temaActualizado : t)
-    );
-    setTemaSeleccionado(temaActualizado);
+    const confirmar = window.confirm('¿Seguro que quieres eliminar esta colección?');
+    if (!confirmar) return;
 
-    // 🔹 Actualizar también el subtema seleccionado
-    const subtemaActualizado = temaActualizado.subtemas.find(
-      s => s._id === subtemaSeleccionado._id
-    );
-    setSubtemaSeleccionado(subtemaActualizado);
+    try {
+      const res = await axios.delete(
+        `${API_BASE}/api/temas/${temaSeleccionado._id}/subtemas/${subtemaSeleccionado._id}/colecciones/${coleccionId}`
+      );
 
-    cerrarModalColeccion();
-  } catch (error) {
-    console.error("❌ Error al guardar colección:", error);
-    alert("No se pudo guardar la colección.");
-  }
-};
+      const temaActualizado = res.data;
 
+      setTemas(prev =>
+        prev.map(t => t._id === temaActualizado._id ? temaActualizado : t)
+      );
 
+      setTemaSeleccionado(temaActualizado);
 
+      const subtemaActualizado = temaActualizado.subtemas.find(
+        s => s._id === subtemaSeleccionado._id
+      );
+      setSubtemaSeleccionado(subtemaActualizado);
 
-
-
-// Eliminar una colección
-const eliminarColeccion = async (coleccionId) => {
-  if (!temaSeleccionado?._id || !subtemaSeleccionado?._id) return;
-  const confirmar = window.confirm('¿Seguro que quieres eliminar esta colección?');
-  if (!confirmar) return;
-
-  try {
-    const res = await axios.delete(
-      `${API_BASE}/api/temas/${temaSeleccionado._id}/subtemas/${subtemaSeleccionado._id}/colecciones/${coleccionId}`
-    );
-
-
-    const temaActualizado = res.data;
-
-    setTemas(prev =>
-      prev.map(t => t._id === temaActualizado._id ? temaActualizado : t)
-    );
-    setTemaSeleccionado(temaActualizado);
-
-    // 🔹 Refrescar el subtema seleccionado
-    const subtemaActualizado = temaActualizado.subtemas.find(
-      s => s._id === subtemaSeleccionado._id
-    );
-    setSubtemaSeleccionado(subtemaActualizado);
-  } catch (error) {
-    console.error("❌ Error al eliminar colección:", error);
-    alert("No se pudo eliminar la colección.");
-  }
-};
-
-
-
-
-
+    } catch (error) {
+      console.error("❌ Error al eliminar colección:", error);
+      alert("No se pudo eliminar la colección.");
+    }
+  };
 
   const abrirFormularioTema = () => {
     setMostrarModalTema(true);
-    setTemaSeleccionado(null); // 🔹 Limpia tema seleccionado
+    setTemaSeleccionado(null);
   };
 
+  const eliminarTema = async (id) => {
+    try {
+      await axios.delete(`${API_BASE}/api/temas/${id}`);
+      setTemas(prev => prev.filter(t => t._id !== id));
 
-const eliminarTema = async (id) => {
-  try {
-    await axios.delete(`${API_BASE}/api/temas/${id}`);
-    setTemas(prev => prev.filter(t => t._id !== id));
-    if (temaSeleccionado?._id === id) {
-      setTemaSeleccionado(null);
+      if (temaSeleccionado?._id === id) {
+        setTemaSeleccionado(null);
+      }
+    } catch (error) {
+      console.error("❌ Error al eliminar tema:", error);
     }
-  } catch (error) {
-    console.error("❌ Error al eliminar tema:", error);
-  }
-};
+  };
 
+  const guardarNuevoTema = async (nuevoTema) => {
+    try {
+      let data;
 
+      if (nuevoTema._id && nuevoTema._id.length === 24) {
+        const { _id, ...resto } = nuevoTema;
+        const res = await axios.put(
+          `${API_BASE}/api/temas/${_id}`,
+          { ...resto, proyecto: proyectoActual._id }
+        );
+        data = res.data;
 
-const guardarNuevoTema = async (nuevoTema) => {
-  try {
-    let data;
-    if (nuevoTema._id && nuevoTema._id.length === 24) {
-      // EDITAR
-      const { _id, ...resto } = nuevoTema;
-      const res = await axios.put(
-        `${API_BASE}/api/temas/${_id}`,
-        { ...resto, proyecto: proyectoActual._id }
-      );
-      data = res.data;
+        setTemas(prev => prev.map(t => t._id === _id ? data : t));
+      } else {
+        const { _id, ...resto } = nuevoTema;
+        const res = await axios.post(
+          `${API_BASE}/api/temas`,
+          { ...resto, proyecto: proyectoActual._id }
+        );
+        data = res.data;
 
-      setTemas(prev => prev.map(t => t._id === _id ? data : t));
-    } else {
-      // CREAR
-      const { _id, ...resto } = nuevoTema;
-      const res = await axios.post(
-        `${API_BASE}/api/temas`,
-        { ...resto, proyecto: proyectoActual._id }
-      );
-      data = res.data;
+        setTemas(prev => [...prev, data]);
+      }
 
-      setTemas(prev => [...prev, data]);
+      setTemaSeleccionado(data);
+      cerrarModalTema();
+    } catch (error) {
+      console.error("❌ Error al guardar tema:", error);
     }
-
-    // 🔹 IMPORTANTE: refrescar también el tema seleccionado
-    setTemaSeleccionado(data);
-
-    cerrarModalTema();
-  } catch (error) {
-    console.error("❌ Error al guardar tema:", error);
-  }
-};
-
-
-
-// `https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/temas/${_id}`,
-// `https://glorious-space-system-v64w69qgggp26xv-5173.app.github.dev/api/temas`,
-
-
-
+  };
 
   return (
     <div className="layout-container">
+
       {/* Sidebar Temas */}
       <div className="sidebar temas">
         <h4>Temas</h4>
@@ -220,17 +193,19 @@ const guardarNuevoTema = async (nuevoTema) => {
           >
             <div className="item-header">
               <div className="item-title">{tema.nombre}</div>
+
               <div className="item-buttons">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    setTemaSeleccionado(tema); 
+                    setTemaSeleccionado(tema);
                     setMostrarModalTema(true);
                   }}
                   title="Editar"
                 >
                   ✏️
                 </button>
+
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -241,6 +216,7 @@ const guardarNuevoTema = async (nuevoTema) => {
                   🗑️
                 </button>
               </div>
+
             </div>
           </div>
         ))}
@@ -260,12 +236,15 @@ const guardarNuevoTema = async (nuevoTema) => {
         ))}
       </div>
 
-      {/* Contenido Principal */}
+      {/* Contenido principal */}
       <div className="main-content">
         <div className="header-row">
           <h4>Colecciones</h4>
+
           {subtemaSeleccionado && (
-            <button onClick={() => abrirModalColeccion()}>+ Nueva colección</button>
+            <button onClick={() => abrirModalColeccion()}>
+              + Nueva colección
+            </button>
           )}
         </div>
 
@@ -279,7 +258,7 @@ const guardarNuevoTema = async (nuevoTema) => {
             if (!Array.isArray(secciones)) {
               secciones = [{ tituloSecundario: '', contenido: coleccion.contenido }];
             }
-          } catch (error) {
+          } catch {
             secciones = [{ tituloSecundario: '', contenido: coleccion.contenido }];
           }
 
@@ -287,9 +266,12 @@ const guardarNuevoTema = async (nuevoTema) => {
 
           return (
             <div key={coleccion._id} className="card">
+
               <div
                 className="card-header"
-                onClick={() => setColeccionExpandida(estaExpandida ? null : coleccion._id)}
+                onClick={() =>
+                  setColeccionExpandida(estaExpandida ? null : coleccion._id)
+                }
                 style={{
                   display: 'flex',
                   justifyContent: 'space-between',
@@ -306,58 +288,68 @@ const guardarNuevoTema = async (nuevoTema) => {
 
               {estaExpandida && (
                 <div className="card-content" style={{ padding: '1rem' }}>
-                  {secciones.map((sec, idx) => (
-                  <div key={idx} className="coleccion-seccion" style={{ marginBottom: '1.5rem' }}>
-                    {sec.tituloSecundario && (
-                      <h4
-                        style={{
-                          fontSize: '1.25rem',
-                          fontWeight: '600',
-                          marginBottom: '0.75rem',
-                          marginTop: '0.5rem',
-                          borderBottom: '1px solid #ddd',
-                          paddingBottom: '0.25rem'
-                        }}
-                      >
-                        {sec.tituloSecundario}
-                      </h4>
-                    )}
 
+                  {secciones.map((sec, idx) => (
                     <div
-                      className="ql-editor"
-                      dangerouslySetInnerHTML={{ __html: sec.contenido }}
-                      style={{
-                        fontSize: '1rem',
-                        lineHeight: '1.7',
-                        marginLeft: '0.25rem',
-                      }}
-                    />
-                  </div>
-                ))}
+                      key={idx}
+                      className="coleccion-seccion"
+                      style={{ marginBottom: '1.5rem' }}
+                    >
+                      {sec.tituloSecundario && (
+                        <h4
+                          style={{
+                            fontSize: '1.25rem',
+                            fontWeight: '600',
+                            marginBottom: '0.75rem',
+                            marginTop: '0.5rem',
+                            borderBottom: '1px solid #ddd',
+                            paddingBottom: '0.25rem'
+                          }}
+                        >
+                          {sec.tituloSecundario}
+                        </h4>
+                      )}
+
+                      <div
+                        className="ql-editor"
+                        dangerouslySetInnerHTML={{ __html: sec.contenido }}
+                        style={{ fontSize: '1rem', lineHeight: '1.7' }}
+                      />
+                    </div>
+                  ))}
 
                   <div className="buttons" style={{ display: 'flex', gap: '1rem' }}>
-                    <button onClick={() => abrirModalColeccion(coleccion)}>Editar</button>
-                    <button onClick={() => eliminarColeccion(coleccion._id)}>Eliminar</button>
+                    <button onClick={() => abrirModalColeccion(coleccion)}>
+                      Editar
+                    </button>
+                    <button onClick={() => eliminarColeccion(coleccion._id)}>
+                      Eliminar
+                    </button>
                   </div>
+
                 </div>
               )}
+
             </div>
           );
         })}
+
       </div>
 
       {/* Botón flotante */}
-      <button className="floating-button" onClick={abrirFormularioTema}>+</button>
+      <button className="floating-button" onClick={abrirFormularioTema}>
+        +
+      </button>
 
       {/* Modales */}
-      {mostrarModalColeccion && (
-        <CollectionModal
+          <CollectionModal
+          visible={mostrarModalColeccion}
           initialData={coleccionEditar}
-           onSubmit={actualizarColeccion}
           onClose={cerrarModalColeccion}
+          onSave={actualizarColeccion}
         />
-      )}
-       {/* Modal de Tema */}
+
+
       {mostrarModalTema && (
         <TemaForm
           tema={temaSeleccionado}
@@ -366,13 +358,9 @@ const guardarNuevoTema = async (nuevoTema) => {
           proyectoActual={proyectoActual}
         />
       )}
+
     </div>
   );
 };
 
 export default ThreeColumnLayout;
-
-
-
-
-

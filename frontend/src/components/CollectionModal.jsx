@@ -1,206 +1,196 @@
-import React, { useState, useEffect, useRef } from 'react';
-import Modal from './Modal';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
-import ImageUpload from './imagenUpload';
+import React, { useState, useEffect, useRef } from "react";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 
 const toolbarOptions = [
-  [{ header: [1, 2, false] }],
-  ['bold', 'italic', 'underline'],
-  [{ list: 'ordered' }, { list: 'bullet' }],
-  ['link', 'image'],
-  ['code-block'],
-  ['clean']
+  ["bold", "italic", "underline"],
+  [{ list: "ordered" }, { list: "bullet" }],
+  ["link", "image"],
 ];
 
-const CollectionModal = ({ onSubmit, initialData = null, onClose }) => {
-  const [nombre, setNombre] = useState('');
-  const [imagenUrl, setImagenUrl] = useState('');
-  const [secciones, setSecciones] = useState([{ tituloSecundario: '', contenido: '' }]);
-  const [sheetUrl, setSheetUrl] = useState('');
-  const [sheetName, setSheetName] = useState('');
-  const modalRef = useRef(null);
+export default function CollectionModal({
+  visible,
+  onClose,
+  onSave,
+  initialData,
+}) {
+  const [titulo, setTitulo] = useState("");
+  const [secciones, setSecciones] = useState([]);
 
+  // Limpia saltos extra y envoltorios innecesarios
+  const limpiarHTML = (html) => {
+    return html
+      .replace(/<p><br><\/p>/g, "")
+      .replace(/\n{2,}/g, "\n")
+      .trim();
+  };
+
+  // Inicializa modal
   useEffect(() => {
+    if (!visible) return;
+
     if (initialData) {
-      setNombre(initialData.nombre);
-      setImagenUrl(initialData.imagenUrl || '');
-      try {
-        const parsed = JSON.parse(initialData.contenido);
-        setSecciones(Array.isArray(parsed) ? parsed : [{ tituloSecundario: '', contenido: parsed }]);
-      } catch {
-        setSecciones([{ tituloSecundario: '', contenido: '' }]);
+      let parsed = initialData.contenido || [];
+
+      // Si viene como string JSON → parsear
+      if (typeof parsed === "string") {
+        try {
+          parsed = JSON.parse(parsed);
+        } catch (err) {
+          parsed = [];
+        }
       }
+
+      setTitulo(initialData.titulo || "");
+
+      // Asignar un ref por sección (CRÍTICO)
+      setSecciones(
+        parsed.map((sec) => ({
+          ...sec,
+          contenido: limpiarHTML(sec.contenido || ""),
+          quillRef: React.createRef(),
+        }))
+      );
+    } else {
+      // Nuevo proyecto
+      setTitulo("");
+      setSecciones([
+        {
+          tituloSecundario: "",
+          contenido: "",
+          quillRef: React.createRef(),
+        },
+      ]);
     }
-  }, [initialData]);
+  }, [visible, initialData]);
 
-  useEffect(() => {
-    if (modalRef.current) {
-      modalRef.current.scrollTop = modalRef.current.scrollHeight;
+  // Manejar cambios en secciones
+  const handleChangeSeccion = (index, campo, valor) => {
+    const copia = [...secciones];
+    copia[index][campo] = valor;
+    setSecciones(copia);
+  };
+
+  // Agregar sección nueva
+  const agregarSeccion = () => {
+    setSecciones([
+      ...secciones,
+      {
+        tituloSecundario: "",
+        contenido: "",
+        quillRef: React.createRef(),
+      },
+    ]);
+  };
+
+  // Eliminar sección
+  const eliminarSeccion = (index) => {
+    const copia = [...secciones];
+    copia.splice(index, 1);
+    setSecciones(copia);
+  };
+
+  // Insertar imagen en el editor correcto
+  const insertarImagenEnQuill = (index, url) => {
+    const editorComponent = secciones[index]?.quillRef?.current;
+    if (!editorComponent) {
+      alert("El editor aún no está listo");
+      return;
     }
-  }, [secciones]);
 
-  const handleFormSubmit = async (e) => {
-    e.preventDefault();
-    if (!nombre) return alert('El nombre es obligatorio.');
+    const quill = editorComponent.getEditor();
+    const range = quill.getSelection(true);
 
-    const nuevaColeccion = {
-      nombre,
-      contenido: JSON.stringify(secciones),
-      imagenUrl,
-    };
-
-    try {
-      await onSubmit(nuevaColeccion);
-    } catch (error) {
-      console.error('Error al guardar:', error);
-      alert('Error al guardar la colección');
-    }
+    quill.insertEmbed(range.index, "image", url);
+    quill.setSelection(range.index + 1);
   };
 
-  const handleChangeSeccion = (index, key, value) => {
-    const updated = [...secciones];
-    updated[index][key] = value;
-    setSecciones(updated);
+  // Guardar colección
+  const handleGuardar = () => {
+    onSave({
+      titulo,
+      contenido: secciones.map((s) => ({
+        tituloSecundario: s.tituloSecundario,
+        contenido: limpiarHTML(s.contenido),
+      })),
+    });
+
+    onClose();
   };
 
-  const handleAddSeccion = () => {
-    setSecciones([...secciones, { tituloSecundario: '', contenido: '' }]);
-  };
-
-  const handleRemoveSeccion = (index) => {
-    if (secciones.length > 1) {
-      setSecciones(secciones.filter((_, i) => i !== index));
-    }
-  };
-
-  const handleLoadFromSheet = () => {
-    if (!sheetUrl || !sheetName) return alert('Proporciona URL y nombre de hoja');
-
-    const match = sheetUrl.match(/\/d\/(.*?)\//);
-    const sheetId = match?.[1];
-
-    if (!sheetId) return alert('URL inválida');
-
-    const embedUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:html&sheet=${encodeURIComponent(sheetName)}`;
-
-    const iframeHTML = `<iframe src="${embedUrl}" width="100%" height="500" frameborder="0"></iframe>`;
-
-    const nuevaSeccion = {
-      tituloSecundario: 'Datos desde Google Sheets',
-      contenido: iframeHTML,
-    };
-
-    setSecciones([nuevaSeccion]);
-  };
+  if (!visible) return null;
 
   return (
-    <Modal isOpen={true} onClose={onClose}>
-      <div ref={modalRef} style={{ maxHeight: '80vh', overflowY: 'auto', padding: '1rem' }}>
-        <h3>{initialData ? 'Editar Colección' : 'Agregar Nueva Colección'}</h3>
+    <div className="modalOverlay">
+      <div className="modal">
+        <h2>{initialData ? "Editar colección" : "Nueva colección"}</h2>
 
-        <form onSubmit={handleFormSubmit}>
-          <div style={{ marginBottom: '1rem' }}>
-            <label>Título Global:</label><br />
+        {/* Título */}
+        <label>Título principal</label>
+        <input
+          type="text"
+          value={titulo}
+          onChange={(e) => setTitulo(e.target.value)}
+          placeholder="Título del proyecto"
+        />
+
+        {/* SECCIONES */}
+        <h3 style={{ marginTop: "20px" }}>Secciones</h3>
+
+        {secciones.map((sec, i) => (
+          <div key={i} className="seccionBox">
+            <label>Título secundario</label>
             <input
               type="text"
-              value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
-              required
-              style={{ width: '100%', padding: '0.5rem' }}
-            />
-          </div>
-
-          {/* Google Sheets */}
-          <div style={{ marginBottom: '1rem', border: '1px dashed #ccc', padding: '1rem' }}>
-            <h4>Cargar desde Google Sheets</h4>
-
-            <input
-              type="text"
-              value={sheetUrl}
-              onChange={(e) => setSheetUrl(e.target.value)}
-              placeholder="https://docs.google.com/spreadsheets/d/..."
-              style={{ width: '100%', marginBottom: '0.5rem' }}
+              value={sec.tituloSecundario}
+              onChange={(e) =>
+                handleChangeSeccion(i, "tituloSecundario", e.target.value)
+              }
+              placeholder="Subtítulo"
             />
 
-            <input
-              type="text"
-              value={sheetName}
-              onChange={(e) => setSheetName(e.target.value)}
-              placeholder="NombreHoja"
-              style={{ width: '100%', marginBottom: '0.5rem' }}
+            <label>Contenido</label>
+            <ReactQuill
+              ref={sec.quillRef}
+              value={sec.contenido}
+              onChange={(val) => handleChangeSeccion(i, "contenido", val)}
+              modules={{ toolbar: toolbarOptions }}
             />
+
+            {/* Botón insertar imagen */}
+            <button
+              className="insertImageBtn"
+              onClick={() => {
+                const url = prompt("Pega la URL de la imagen:");
+                if (url) insertarImagenEnQuill(i, url);
+              }}
+            >
+              Insertar imagen
+            </button>
 
             <button
-              type="button"
-              onClick={handleLoadFromSheet}
-              style={{ padding: '0.5rem', backgroundColor: '#28a745', color: 'white' }}
+              className="deleteBtn"
+              onClick={() => eliminarSeccion(i)}
+              disabled={secciones.length === 1}
             >
-              Cargar Tabla
+              Eliminar sección
             </button>
           </div>
+        ))}
 
-          {secciones.map((sec, index) => (
-            <div key={index} style={{ border: '1px solid #ddd', padding: '1rem', marginBottom: '1rem' }}>
-              <input
-                type="text"
-                placeholder="Título Secundario (opcional)"
-                value={sec.tituloSecundario}
-                onChange={(e) => handleChangeSeccion(index, 'tituloSecundario', e.target.value)}
-                style={{ width: '100%', marginBottom: '0.5rem' }}
-              />
+        <button className="addBtn" onClick={agregarSeccion}>
+          + Agregar sección
+        </button>
 
-              <ReactQuill
-                value={sec.contenido}
-                onChange={(value) => handleChangeSeccion(index, 'contenido', value)}
-                modules={{ toolbar: toolbarOptions }}
-              />
-
-              {secciones.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => handleRemoveSeccion(index)}
-                  style={{ backgroundColor: 'red', color: 'white', marginTop: '0.5rem' }}
-                >
-                  Eliminar sección
-                </button>
-              )}
-            </div>
-          ))}
-
-          <button
-            type="button"
-            onClick={handleAddSeccion}
-            style={{ marginTop: '1rem', backgroundColor: '#007bff', color: 'white' }}
-          >
-            + Agregar Sección Manual
+        {/* BOTONERA */}
+        <div className="modalButtons">
+          <button onClick={onClose}>Cancelar</button>
+          <button onClick={handleGuardar} className="saveBtn">
+            Guardar
           </button>
-
-          <ImageUpload onUpload={setImagenUrl} />
-
-          {imagenUrl && <img src={imagenUrl} alt="Vista previa" style={{ maxWidth: '100%', marginTop: '1rem' }} />}
-
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem' }}>
-            <button type="button" onClick={onClose} style={{ backgroundColor: 'red', color: 'white' }}>
-              Cancelar
-            </button>
-
-            <button type="submit" style={{ backgroundColor: 'green', color: 'white' }}>
-              Guardar Colección
-            </button>
-          </div>
-        </form>
+        </div>
       </div>
-    </Modal>
+    </div>
   );
-};
-
-export default CollectionModal;
-
-
-
-
-
-
-
+}
 

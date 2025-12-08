@@ -503,3 +503,7 @@ strong, b {
   list-style-type: lower-roman;
   margin-left: 2.5rem;
 }
+.ql-editor img {
+  max-width: 100%;
+  height: auto;
+}
