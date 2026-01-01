@@ -13,7 +13,7 @@ const ProyectoWrapper = ({ setProyectoActual }) => {
   useEffect(() => {
     if (!proyectoId) return;
 
-    axios.get(`${API_BASE}/api/proyectos/${proyectoId}`)
+    axios.get(`/api/proyectos/${proyectoId}`)
       .then(res => {
         setProyecto(res.data);
         setProyectoActual(res.data);

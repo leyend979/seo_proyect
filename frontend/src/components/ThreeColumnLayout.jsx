@@ -22,18 +22,27 @@ const ThreeColumnLayout = ({ proyectoActual }) => {
 }, [proyectoActual]);
   
   const cargarTemas = async () => {
-    if (!proyectoActual?._id) return;
-    console.log(proyectoActual)
-    
-    try {
-      const res = await axios.get(
-        `${API_BASE}/api/temas?proyecto=${proyectoActual._id}`
-      );
+  if (!proyectoActual?._id) return;
+
+  try {
+    const res = await axios.get(
+      `/api/temas?proyecto=${proyectoActual._id}`
+    );
+
+    // 🛡️ Protección extra (muy recomendable)
+    if (Array.isArray(res.data)) {
       setTemas(res.data);
-    } catch (err) {
-      console.error('Error al cargar temas:', err);
+    } else {
+      console.error("❌ La API no devolvió un array:", res.data);
+      setTemas([]);
     }
-  };
+
+  } catch (err) {
+    console.error('❌ Error al cargar temas:', err);
+    setTemas([]);
+  }
+};
+
   
   useEffect(() => {
     cargarTemas(); // ya disponible aquí
@@ -74,12 +83,12 @@ const actualizarColeccion = async (nuevaColeccion) => {
 
     if (coleccionEditar?._id) {
       res = await axios.put(
-        `${API_BASE}/api/temas/${temaSeleccionado._id}/subtemas/${subtemaSeleccionado._id}/colecciones/${coleccionEditar._id}`,
+        `/api/temas/${temaSeleccionado._id}/subtemas/${subtemaSeleccionado._id}/colecciones/${coleccionEditar._id}`,
         nuevaColeccion
       );
     } else {
       res = await axios.post(
-        `${API_BASE}/api/temas/${temaSeleccionado._id}/subtemas/${subtemaSeleccionado._id}/colecciones`,
+        `/api/temas/${temaSeleccionado._id}/subtemas/${subtemaSeleccionado._id}/colecciones`,
         nuevaColeccion
       );
     }
@@ -118,7 +127,7 @@ const eliminarColeccion = async (coleccionId) => {
 
   try {
     const res = await axios.delete(
-      `${API_BASE}/api/temas/${temaSeleccionado._id}/subtemas/${subtemaSeleccionado._id}/colecciones/${coleccionId}`
+      `/api/temas/${temaSeleccionado._id}/subtemas/${subtemaSeleccionado._id}/colecciones/${coleccionId}`
     );
 
 
@@ -153,7 +162,7 @@ const eliminarColeccion = async (coleccionId) => {
 
 const eliminarTema = async (id) => {
   try {
-    await axios.delete(`${API_BASE}/api/temas/${id}`);
+    await axios.delete(`/api/temas/${id}`);
     setTemas(prev => prev.filter(t => t._id !== id));
     if (temaSeleccionado?._id === id) {
       setTemaSeleccionado(null);
@@ -172,7 +181,7 @@ const guardarNuevoTema = async (nuevoTema) => {
       // EDITAR
       const { _id, ...resto } = nuevoTema;
       const res = await axios.put(
-        `${API_BASE}/api/temas/${_id}`,
+        `/api/temas/${_id}`,
         { ...resto, proyecto: proyectoActual._id }
       );
       data = res.data;
@@ -182,7 +191,7 @@ const guardarNuevoTema = async (nuevoTema) => {
       // CREAR
       const { _id, ...resto } = nuevoTema;
       const res = await axios.post(
-        `${API_BASE}/api/temas`,
+        `/api/temas`,
         { ...resto, proyecto: proyectoActual._id }
       );
       data = res.data;
@@ -249,7 +258,9 @@ const guardarNuevoTema = async (nuevoTema) => {
       {/* Sidebar Subtemas */}
       <div className="sidebar subtemas">
         <h4>Subtemas</h4>
-        {temaSeleccionado?.subtemas.map(subtema => (
+        {Array.isArray(temaSeleccionado?.subtemas) &&
+        temaSeleccionado.subtemas.map(subtema => (
+
           <div
             key={subtema._id}
             className={`item ${subtemaSeleccionado?._id === subtema._id ? 'selected' : ''}`}
@@ -269,7 +280,8 @@ const guardarNuevoTema = async (nuevoTema) => {
           )}
         </div>
 
-        {subtemaSeleccionado?.colecciones?.map((coleccion) => {
+        {Array.isArray(subtemaSeleccionado?.colecciones) &&
+          subtemaSeleccionado.colecciones.map((coleccion) => {
           
           let secciones = [];
           console.log("📂 Colecciones de subtema:", subtemaSeleccionado?.colecciones);

@@ -10,7 +10,7 @@ const Navbar = ({ proyectoActual, setProyectoActual }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get(API_BASE+'/api/proyectos')
+    axios.get('/api/proyectos')
       .then(res => setProyectos(res.data))
       .catch(err => {
         console.error('Error al cargar proyectos', err);
@@ -33,7 +33,7 @@ const Navbar = ({ proyectoActual, setProyectoActual }) => {
 
     try {
       
-      const res = await axios.post(API_BASE+'api/proyectos', {
+      const res = await axios.post('api/proyectos', {
         nombre: nombre.trim()
       });
       setProyectos([...proyectos, res.data]);
