@@ -9,7 +9,7 @@ const Proyectos = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get(API_BASE+'/api/proyectos')
+    axios.get('/api/proyectos')
       .then(res => setProyectos(res.data))
       .catch(err => console.error('Error al cargar proyectos', err));
   }, []);
@@ -18,7 +18,7 @@ const Proyectos = () => {
     const nombre = prompt('Nombre del nuevo proyecto:');
     if (!nombre) return;
     try {
-      const res = await axios.post(API_BASE+'/api/proyectos', { nombre });
+      const res = await axios.post('/api/proyectos', { nombre });
       setProyectos([...proyectos, res.data]);
     } catch (err) {
       console.error('Error al crear proyecto:', err);
